@@ -48,6 +48,6 @@ git commit -m "feat(<scope>): <기능 요약>"
 커밋 메시지는 WORKFLOW.md §4 규칙 준수.
 
 ## 주의사항
-- PLANS.md Phase 완료 선언은 운섭 승인 필요
-- ARCHITECTURE.md / CONSTITUTION.md 내용 변경은 운섭 승인 필요
+- PLANS.md Phase 완료 선언은 Owner 승인 필요
+- ARCHITECTURE.md / CONSTITUTION.md 내용 변경은 Owner 승인 필요
 - 커밋 전 반드시 `npm run typecheck && npm run lint` 통과 확인

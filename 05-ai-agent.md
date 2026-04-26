@@ -9,17 +9,17 @@
 
 ```
 이름: 없음 (별칭 없이 자연스럽게)
-역할: 운섭·아름 가족의 재정 데이터를 가장 잘 아는 비서
+역할: 가족의 재정 데이터를 가장 잘 아는 비서
 톤:   친근하고 정확하게. 딱딱한 금융 용어보다 일상 언어 우선.
-      숫자는 항상 콤마+원 표기 (18,614,300원)
-      비율은 % 표기 (78.7%)
+      숫자는 항상 콤마+원 표기 (X,XXX,XXX원)
+      비율은 % 표기 (XX.X%)
 ```
 
 **잘하는 것:**
 - 특정 기간/카테고리/사람별 지출 조회 및 집계
 - 자산 현황 파악 및 변화 추이 설명
 - 배당금 현황 및 목표 달성 여부 확인
-- 과거 특정 사건과 연결된 지출 기억 ("희온이 100일 때 얼마 썼어?")
+- 과거 특정 사건과 연결된 지출 기억 ("Child 100일 때 얼마 썼어?")
 - 저축률·순자산 목표 대비 현황 파악
 
 **하지 않는 것:**
@@ -32,20 +32,16 @@
 ## 2. 시스템 프롬프트
 
 ```
-당신은 운섭·아름 가족의 AI 재정 비서입니다.
+당신은 가족의 AI 재정 비서입니다.
 가족의 실제 가계부·자산·배당금 데이터를 기반으로 정확하고 친근하게 답변하세요.
 
-[가족 맥락]
-- 운섭: 주 소득자, 넥슨 재직, 주식·ETF 투자 담당
-- 아름: 육아휴직 중 (2025.01~), 연금저축·ISA 보유
-- 희온: 2025년 1월생 자녀
+[가족 구성]
+- Owner : 주 소득자, 주식·ETF 투자 담당
+- Spouse: 육아휴직 중, 연금저축·ISA 보유
+- Child : 영아 자녀
 
-[자산 구조 요약 - 2026년 3월 기준]
-- 순자산: 약 20.4억
-- 부동산: 신정1단지 아파트(10.35억) + 전세보증금(3억)
-- 주식통장: 6.58억 (운섭 KB증권)
-- 연금: 퇴직금DC·연금저축·IRP 등
-- 월 배당금: 약 142만원 (2026년 기준)
+[자산 구조]
+- 순자산, 부동산, 주식통장, 연금, 배당금 등 실제 DB 데이터 기반
 
 [답변 원칙]
 1. 데이터 기반으로만 답변한다. 없는 데이터는 "해당 데이터가 없어요"라고 말한다.
@@ -73,8 +69,8 @@
       class_type:   { type: "string", enum: ["수입", "지출"] },
       category:     { type: "string", description: "카테고리 (고정지출, 변동지출, 기타지출, 주수입, 기타수입)" },
       subcategory:  { type: "string", description: "서브카테고리 (외식비, 보험, 경조사 등)" },
-      user_name:    { type: "string", enum: ["운섭", "아름", "희온", "공동"] },
-      tags:         { type: "array", items: { type: "string" }, description: "태그 필터 (#육아휴직 등)" },
+      user_name:    { type: "string", enum: ["Owner", "Spouse", "Child", "Shared"] },
+      tags:         { type: "array", items: { type: "string" }, description: "태그 필터 (#육아 등)" },
       keyword:      { type: "string", description: "메모/항목명 키워드 검색" },
       aggregate:    { type: "string", enum: ["sum", "count", "avg", "list"], description: "집계 방식. list=상세 목록" },
       limit:        { type: "number", description: "list 조회 시 최대 건수 (기본 20)" },
@@ -89,10 +85,10 @@
 // "지난달 외식비 얼마야?"
 { "from": "2026-03", "to": "2026-03", "subcategory": "외식비", "aggregate": "sum" }
 
-// "올해 운섭이 쓴 경조사 목록 보여줘"
-{ "from": "2026-01", "class_type": "지출", "subcategory": "경조사", "user_name": "운섭", "aggregate": "list" }
+// "올해 Owner가 쓴 경조사 목록 보여줘"
+{ "from": "2026-01", "class_type": "지출", "subcategory": "경조사", "user_name": "Owner", "aggregate": "list" }
 
-// "희온이 관련 지출 총얼마야?"
+// "Child 관련 지출 총얼마야?"
 { "from": "2025-01", "tags": ["#육아"], "aggregate": "sum" }
 ```
 
@@ -107,7 +103,7 @@
     type: "object",
     properties: {
       snapshot_date: { type: "string", description: "특정 월 (YYYY-MM). 없으면 최신 스냅샷" },
-      owner:         { type: "string", enum: ["운섭", "아름", "공동", "all"] },
+      owner:         { type: "string", enum: ["Owner", "Spouse", "Shared", "all"] },
       asset_type:    { type: "string", description: "부동산·통장·연금·예적금·기타·대출" },
       history:       { type: "boolean", description: "true면 전체 추이 조회" },
     }
@@ -120,8 +116,8 @@
 // "지금 우리 순자산 얼마야?"
 { "snapshot_date": "latest" }
 
-// "운섭 연금 얼마 쌓였어?"
-{ "owner": "운섭", "asset_type": "연금" }
+// "Owner 연금 얼마 쌓였어?"
+{ "owner": "Owner", "asset_type": "연금" }
 
 // "아파트 가격 변화 보여줘"
 { "asset_type": "부동산", "history": true }
@@ -156,7 +152,6 @@
 
 // "월 배당금 100만원 목표까지 얼마나 남았어?"
 { "from": "2026-01", "aggregate": "monthly" }
-// → 에이전트가 평균 계산 후 목표 대비 설명
 ```
 
 ---
@@ -194,57 +189,39 @@
 ```
 Q: "지난달 외식비 얼마나 썼어?"
 
-[Tool call: query_transactions { from:"2026-03", subcategory:"외식비", aggregate:"sum" }]
-[결과: 132,000원 / 12건]
+[Tool call: query_transactions { from:"YYYY-MM", subcategory:"외식비", aggregate:"sum" }]
+[결과: X건 / XXX,XXX원]
 
-A: "3월에 외식비로 132,000원 쓰셨어요. 총 12번 외식하셨네요.
-   주로 집 근처 식당 위주였고, 인천공항 아침식사(23,000원)가
-   제일 큰 건이었어요."
+A: "지난달 외식비로 XXX,XXX원 쓰셨어요. 총 X번 외식하셨네요."
 ```
 
 ### 예시 2: 삶과 연결된 기억
 ```
-Q: "희온이 돌 즈음에 경조사 비용 얼마 썼어?"
+Q: "Child 돌 즈음에 경조사 비용 얼마 썼어?"
 
-[Tool call: query_transactions { from:"2025-12", to:"2026-02", subcategory:"경조사", aggregate:"list" }]
+[Tool call: query_transactions { from:"YYYY-MM", to:"YYYY-MM", subcategory:"경조사", aggregate:"list" }]
 
-A: "희온이 돌(2026년 1월) 전후 3개월간 경조사 비용이에요.
-   - 12월: 유경님 아버님 부조금 100,000원
-   - 1월: 희온이 돌 교회 떡 100,000원, 시아버지 생신 200,000원,
-          아름이 고등학교친구 결혼 200,000원
-   - 2월: 희온이 돌 신방예배비 200,000원, 설명절 과일상자 177,000원
-   
-   합계 977,000원이었어요."
+A: "Child 돌 전후 3개월간 경조사 비용을 정리해드릴게요.
+   [DB 조회 결과 기반으로 답변]
+   합계 XXX,XXX원이었어요."
 ```
 
 ### 예시 3: 재정 목표 현황
 ```
 Q: "배당금 월 100만원 목표까지 얼마나 남았어?"
 
-[Tool call: query_dividend { from:"2026-01", aggregate:"monthly" }]
-[결과: 2026년 1~3월 월평균 1,380,829원]
+[Tool call: query_dividend { from:"YYYY-01", aggregate:"monthly" }]
 
-A: "이미 달성하셨어요! 🎉
-   2026년 1~3월 월평균 배당금이 1,380,829원으로
-   목표인 월 100만원을 38% 초과 달성했어요.
-   
-   연간으로 보면:
-   - 2023년 평균: 279,322원/월
-   - 2024년 평균: 939,896원/월  (+236%)
-   - 2025년 평균: 1,422,317원/월 (+51%)
-   - 2026년 평균: 1,380,829원/월 (현재까지)"
+A: "현재 월평균 배당금은 X,XXX,XXX원으로 목표를 달성하셨어요!
+   연간 추이도 꾸준히 성장하고 있어요."
 ```
 
 ### 예시 4: 투자 관련 (면책 문구 포함)
 ```
 Q: "SCHD 더 살까 TLT 더 살까?"
 
-A: "현재 포트폴리오 상황을 보면요.
-   SCHD: 2025년 총 배당금 약 655만원 (분기 배당)
-   TLT: 2025년 총 배당금 약 65만원 (월 배당)
-   
-   배당금 기여도로는 SCHD가 훨씬 크고,
-   TLT는 금리 변화에 따라 가격 변동이 커요.
+A: "현재 포트폴리오 배당금 기여도 기준으로 보면
+   [DB 조회 결과 기반 분석]
    
    투자·세무 관련 최종 결정은 전문가와 확인하세요."
 ```
@@ -269,8 +246,8 @@ A: "현재 포트폴리오 상황을 보면요.
 │                                                │
 │  👤 지난달 외식비 얼마야?                       │
 │                                                │
-│  🤖 3월 외식비는 132,000원이에요.               │
-│     총 12번 외식하셨고...                       │
+│  🤖 지난달 외식비는 XXX,XXX원이에요.            │
+│     총 X번 외식하셨고...                        │
 │                                                │
 │  ────────────────────────────────────────    │
 │  [메시지 입력...                        ] [전송]│
@@ -282,7 +259,7 @@ A: "현재 포트폴리오 상황을 보면요.
 - 메시지 스트리밍 출력 (타이핑 효과)
 - Tool 호출 중 로딩 표시: "데이터 조회 중..."
 - 숫자/표 포함 답변은 마크다운 렌더링
-- 대화 히스토리: 세션 내 유지 (페이지 새로고침 시 초기화)
+- 대화 히스토리: 세션 내 유지 (OD-004: DB 저장 + 20개 상한)
 
 ---
 
@@ -291,7 +268,7 @@ A: "현재 포트폴리오 상황을 보면요.
 ### 6-1. 설정
 ```
 봇 이름: AI Finance Management
-허용 chat_id: 운섭 + 아름 2개만 (환경변수 TELEGRAM_ALLOWED_CHAT_IDS)
+허용 chat_id: Owner + Spouse 2개만 (환경변수 TELEGRAM_ALLOWED_CHAT_IDS)
 ```
 
 ### 6-2. 명령어
@@ -305,17 +282,6 @@ A: "현재 포트폴리오 상황을 보면요.
 
 ### 6-3. 자연어 질문
 명령어 없이 자연어로 질문하면 웹과 동일한 AI 에이전트가 응답.
-
-```
-[텔레그램 메시지]
-운섭: "오늘 희온이 기저귀값 얼마 썼어?"
-
-[봇 응답]
-이번달 기저귀 관련 지출이에요:
-• 하기스 기저귀 40,090원 (03-10)
-• 하기스 기저귀 40,090원 (03-28)
-합계: 80,180원
-```
 
 ### 6-4. Webhook 설정
 ```typescript
@@ -351,8 +317,11 @@ export async function askAgent(
   question: string,
   history: Message[] = []
 ): Promise<string> {
+  // OD-004: 직전 20개 메시지만 포함 (토큰 비용 상한)
+  const trimmedHistory = history.slice(-20)
+
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-5',
     max_tokens: 1024,
     system: SYSTEM_PROMPT,
     tools: [
@@ -361,10 +330,9 @@ export async function askAgent(
       QUERY_DIVIDEND_TOOL,
       CALCULATE_SUMMARY_TOOL,
     ],
-    messages: [...history, { role: 'user', content: question }],
+    messages: [...trimmedHistory, { role: 'user', content: question }],
   })
 
-  // Tool use 처리 루프
   return await handleToolUseLoop(response)
 }
 ```

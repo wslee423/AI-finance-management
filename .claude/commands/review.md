@@ -17,7 +17,7 @@ npm run lint
 git diff --name-only
 git diff --staged --name-only
 ```
-예상하지 못한 파일이 변경된 경우 운섭에게 보고.
+예상하지 못한 파일이 변경된 경우 Owner에게 보고.
 
 ### Step 3: 금융 데이터 무결성 검사 ← 이 서비스 핵심
 변경된 파일을 읽고 다음을 확인:

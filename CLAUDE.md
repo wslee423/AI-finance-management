@@ -9,20 +9,20 @@
 1. `CONSTITUTION.md` — 최상위 원칙 (항상)
 2. `AGENTS.md` — 에이전트 역할 및 자율 범위
 3. `PLANS.md` — 현재 Phase 및 다음 작업
-4. `exec-plans/NEXT_SESSION.md` — 이전 세션 핸드오프 (있으면)
+4. `NEXT_SESSION.md` — 이전 세션 핸드오프 (있으면)
 
 ---
 
 ## 프로젝트 개요
 
-운섭·아름 가족의 가계부·자산·배당 데이터를 기반으로 AI가 재정 질의응답과 시각화 대시보드를 제공하는 가족 전용 웹 서비스.
+가족 구성원의 가계부·자산·배당 데이터를 기반으로 AI가 재정 질의응답과 시각화 대시보드를 제공하는 가족 전용 웹 서비스.
 
 | 역할 | 기술 |
 |------|------|
 | Framework | Next.js 15 App Router |
 | Language | TypeScript strict |
 | DB / Auth | Supabase (PostgreSQL + Auth + RLS) |
-| AI | Anthropic Claude API (`claude-sonnet-4-20250514`) |
+| AI | Anthropic Claude API (`claude-sonnet-4-5`) |
 | 차트 | Recharts |
 | 배포 | Vercel (Pro 플랜 — Cron Job 필요) |
 | 텔레그램 | node-telegram-bot-api |
@@ -44,7 +44,7 @@ npm run test
 
 **Must Follow**
 - TypeScript strict 모드 — `any` 사용 금지
-- 모든 DB 테이블 RLS 활성화 (운섭·아름만 접근 가능)
+- 모든 DB 테이블 RLS 활성화 (허용된 두 사용자만 접근 가능)
 - **금융 데이터 soft delete만** — `.delete()` 직접 실행 금지
 - 모든 API Route 인증 확인 (미인증 → 401)
 - AI 에이전트 = 생활 비서 — 투자·세무 질문 시에만 면책 문구 1줄
@@ -53,7 +53,7 @@ npm run test
 
 **Must NOT Do**
 - 외부 패키지 무단 추가
-- DB 스키마 무단 변경 (마이그레이션 파일 작성은 가능, 적용은 운섭 승인 필요)
+- DB 스키마 무단 변경 (마이그레이션 파일 작성은 가능, 적용은 Owner 승인 필요)
 - transactions / assets / dividend hard delete
 - 허용 이메일 외 사용자 접근 허용
 - AI 에이전트 역할 임의 변경
@@ -73,16 +73,16 @@ app/api/chat/route.ts
 
 ```
 [가족 구성]
-- 운섭: 주 소득자, 넥슨 재직, 주식·ETF 투자
-- 아름: 육아휴직 중 (2025.01~), 연금저축·ISA 보유
-- 희온: 2025년 1월생 자녀
+- Owner : 주 소득자, 주식·ETF 투자 담당
+- Spouse: 육아휴직 중, 연금저축·ISA 보유
+- Child : 자녀 (영아)
 
-[자산 구조 (2026.03 기준)]
-- 순자산: 약 20.4억
-- 부동산: 신정1단지 10.35억 + 전세보증금 3억
-- 주식통장: 약 6.58억 (KB증권)
-- 연금: 약 1.62억
-- 월 배당금: 약 142만원
+[자산 구조 (최신 기준)]
+- 순자산: XX억 이상
+- 부동산: 아파트 + 전세보증금
+- 주식통장: [증권사] 계좌
+- 연금: 퇴직금(DC/DB), 연금저축, ISA
+- 월 배당금: 목표 100만원 초과 달성
 
 [지출 분류]
 - 고정지출: 보험, 용돈, 관리비, 구독, 통신비, 교통
@@ -102,22 +102,26 @@ app/api/chat/route.ts
 ├── QUALITY_SCORE.md
 ├── PLANS.md
 ├── ARCHITECTURE.md
+├── WORKFLOW.md
+├── MIGRATION.md
 ├── open-decisions.md
-├── product-specs/
-│   ├── 01-db-schema.md
-│   ├── 02-admin-data-entry.md
-│   ├── 03-backup.md
-│   ├── 04-dashboard.md
-│   └── 05-ai-agent.md
-├── exec-plans/
-│   └── NEXT_SESSION.md
+├── tech-debt.md
+├── NEXT_SESSION.md
+├── 01-db-schema.md
+├── 02-admin-data-entry.md
+├── 03-backup.md
+├── 04-dashboard.md
+├── 05-ai-agent.md
+├── scripts/
+│   └── migrate.ts
+├── .claude/
+│   ├── settings.json
+│   └── commands/
 ├── app/
 ├── components/
 ├── lib/
 └── types/
 ```
-
-> 현재는 기획 단계로 docs 폴더 별도. 프로젝트 생성 후 루트로 이동 예정.
 
 ---
 
@@ -133,4 +137,5 @@ TELEGRAM_ALLOWED_CHAT_IDS=          # 허용 chat_id (콤마 구분)
 CRON_SECRET=                        # Vercel Cron 인증용
 GOOGLE_SERVICE_ACCOUNT_JSON=        # 구글 서비스 계정 JSON
 BACKUP_SPREADSHEET_ID=              # 백업 구글시트 ID
+EXCHANGE_RATE_API_KEY=              # 환율 API (OD-002)
 ```

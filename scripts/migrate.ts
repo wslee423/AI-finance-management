@@ -52,7 +52,7 @@ function toAmount(value: unknown): number {
 function normalizeUser(user: unknown): string {
   const u = String(user ?? '').trim()
   const map: Record<string, string> = {
-    '운섭': '운섭', '아름': '아름', '희온': '희온', '공동': '공동',
+    'Owner': 'Owner', 'Spouse': 'Spouse', 'Child': 'Child', '공동': '공동',
   }
   return map[u] ?? '공동'
 }
@@ -196,7 +196,7 @@ async function migrateAssets(wb: XLSX.WorkBook) {
       owner: owner,
       balance: balance,
       contribution_rate: null, // 기본값: 단독 자산
-      // 아파트(신정1단지)의 기여율은 마이그레이션 후 수동 설정 필요
+      // 공동 자산의 기여율은 마이그레이션 후 수동 설정 필요
       created_at: new Date().toISOString(),
       // institution 실제 기관명은 memo로 저장
       ...(memo && { memo }),

@@ -10,7 +10,7 @@
 | OD-002 | 🟠 High | 배당금 환율 기준 처리 방식 | ✅ 완료 |
 | OD-003 | 🟡 Medium | 구글시트 역할 재정의 | ✅ 완료 |
 | OD-004 | 🟡 Medium | 텔레그램 봇 대화 히스토리 저장 여부 | ✅ 완료 |
-| OD-005 | 🟢 Low | 아파트 자산 기여도 관리 방식 | ✅ 완료 |
+| OD-005 | 🟢 Low | 공동 자산 기여도 관리 방식 | ✅ 완료 |
 
 ---
 
@@ -20,7 +20,7 @@
 **우선순위**: 🔴 Blocker | **상태**: ✅ 완료
 
 **결정**: 1회성 Node.js 스크립트로 일괄 마이그레이션
-- 과거 데이터(2022.05~현재)는 스크립트로 일괄 import
+- 과거 데이터는 스크립트로 일괄 import
 - 이후 신규 데이터는 웹 Admin에서만 입력
 - 중복 방지: `date + amount + category + user_name` 조합으로 upsert
 
@@ -55,17 +55,16 @@
 - 대화 로그는 Supabase에 저장 (웹+텔레그램 공통)
 - API 호출 시에는 **직전 20개 메시지만** 포함 → 토큰 비용 상한 제어
 - DB 저장 자체는 무료 (Supabase 무료 tier)
-- AI 토큰 비용: 20개 상한 제한으로 대화 길어져도 비용 급증 없음
 - 구현 위치: `lib/anthropic/agent.ts` (history slice 로직)
 - 저장 테이블: `ai_conversations`, `ai_messages` (Phase 5 때 추가)
 
 ---
 
-### OD-005: 아파트 자산 기여도 관리 방식
+### OD-005: 공동 자산 기여도 관리 방식
 **우선순위**: 🟢 Low | **상태**: ✅ 완료
 
 **결정**: assets 테이블에 `contribution_rate` 컬럼 추가
-- 운섭 기여분 = balance × contribution_rate
-- 아름 기여분 = balance × (1 − contribution_rate)
-- 신정1단지 기준: 운섭 75.89% (459,800,000 / 605,000,000)
+- Owner 기여분 = balance × contribution_rate
+- Spouse 기여분 = balance × (1 − contribution_rate)
+- 실제 기여율은 DB 또는 설정에서 관리 (문서에 수치 미기재)
 - product-specs/01-db-schema.md assets 테이블에 반영 완료

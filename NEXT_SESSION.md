@@ -46,7 +46,7 @@ npm install -D tsx                # TypeScript 스크립트 실행
 - 리전: Northeast Asia (Seoul)
 - .env.local 에 SUPABASE URL + ANON_KEY 설정
 
-**Step 4: DB 스키마 적용 (운섭 승인 후)**
+**Step 4: DB 스키마 적용 (Owner 승인 후)**
 - product-specs/01-db-schema.md 기준 SQL 실행
 - Supabase SQL Editor에서 실행:
   1. transactions 테이블
@@ -61,7 +61,7 @@ npm install -D tsx                # TypeScript 스크립트 실행
 - Authentication > Providers > Email 활성화
 - Authentication > URL Configuration > Site URL 설정
 - 신규 가입 차단 (Sign-ups disabled)
-- 운섭·아름 계정 수동 생성
+- Owner·Spouse 계정 수동 생성
 
 **Step 6: Next.js Supabase 연결**
 - lib/supabase/client.ts 생성
@@ -77,10 +77,10 @@ npm install -D tsx                # TypeScript 스크립트 실행
 
 ---
 
-## ❓ Phase 1 시작 전 운섭이 준비해야 할 것
+## ❓ Phase 1 시작 전 Owner가 준비해야 할 것
 
 1. **Supabase 프로젝트 생성** → URL + ANON_KEY + SERVICE_ROLE_KEY 확보
-2. **운섭·아름 이메일 확인** → RLS `is_allowed_user()` 함수에 넣을 이메일
+2. **Owner·Spouse 이메일 확인** → RLS `is_allowed_user()` 함수에 넣을 이메일
 3. **Vercel 계정 연결** → 나중에 배포 시 필요
 4. **.env.local 파일 생성** → .env.example 기준으로 작성
 
@@ -93,7 +93,7 @@ npm install -D tsx                # TypeScript 스크립트 실행
 □ Supabase 프로젝트 생성 + 환경변수 연결
 □ 5개 테이블 스키마 생성 (transactions, assets, dividend, preset_templates, backup_logs)
 □ RLS 정책 + updated_at 트리거 적용
-□ Supabase Auth 설정 (운섭·아름 이메일 whitelist)
+□ Supabase Auth 설정 (Owner·Spouse 이메일 whitelist)
 □ 로그인/로그아웃 기본 동작 확인
 □ 미인증 → /login 리다이렉트 동작 확인
 □ npm run typecheck && npm run lint 경고 0건

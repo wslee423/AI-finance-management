@@ -6,7 +6,7 @@
 
 ## 목표
 
-3개월 내 MVP. 운섭·아름이 구글시트 대신 웹에서 가계부를 입력하고, AI에게 재정 질문을 할 수 있는 상태.
+3개월 내 MVP. Owner·Spouse이 구글시트 대신 웹에서 가계부를 입력하고, AI에게 재정 질문을 할 수 있는 상태.
 
 ---
 
@@ -32,7 +32,7 @@
 - [ ] Supabase 프로젝트 생성 + 환경변수 연결
 - [ ] 4개 테이블 스키마 생성 (transactions, assets, dividend, preset_templates)
 - [ ] RLS 정책 + updated_at 트리거 적용
-- [ ] Supabase Auth 설정 (운섭·아름 이메일 whitelist, 신규 가입 차단)
+- [ ] Supabase Auth 설정 (Owner·Spouse 이메일 whitelist, 신규 가입 차단)
 - [ ] 로그인/로그아웃 기본 동작 확인
 - [ ] `npm run typecheck && npm run lint` 경고 0건
 
@@ -76,7 +76,7 @@
 - [ ] KPI 카드 4개 기간 필터 적용 (총수입, 총지출, 저축률, 총배당금)
 - [ ] 핵심 차트 5개 실데이터 렌더링 (월별 수입/지출, 저축률, 순자산, 지출 도넛, 배당금)
 - [ ] 저축 vs 투자 기여도 테이블
-- [ ] 개인별 순자산 (운섭/아름 분리)
+- [ ] 개인별 순자산 (Owner/Spouse 분리)
 - [ ] 기간 필터 (전체/연도/커스텀)
 - [ ] 반응형 레이아웃
 
@@ -114,7 +114,7 @@
 
 **Phase Gate**
 - [ ] 텔레그램 메시지 → AI 답변 왕복 동작
-- [ ] 운섭·아름 chat_id 인증 동작
+- [ ] Owner·Spouse chat_id 인증 동작
 - [ ] Phase 2 백업 스크립트에 텔레그램 알림 추가 완료
 
 **작업 목록**

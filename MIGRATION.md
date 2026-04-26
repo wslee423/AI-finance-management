@@ -27,13 +27,13 @@
 | `subcategory` | `item` | null 허용 |
 | `item` | (item 앞에 추가) | subcategory가 없으면 item에 병합 |
 | `amount` | `amount` | float → bigint (반올림) |
-| `user` | `user_name` | trim() 후 ('운섭'/'아름'/'희온'/'공동') |
+| `user` | `user_name` | trim() 후 ('Owner'/'Spouse'/'Child'/'공동') |
 | `memo` | `memo` | null 허용 |
 | `tags` | `tags` | 문자열 → text[] 변환 |
 
 **제외 항목:**
 - `class = '이체'` (= 저축/투자 이체): 72행 제외
-- `user = ' 운섭'` (앞 공백): trim 후 '운섭'으로 정규화
+- `user = ' Owner'` (앞 공백): trim 후 'Owner'으로 정규화
 
 **type 매핑:**
 ```
@@ -57,7 +57,7 @@
 | `assettype` | `institution` | 자산 종류명 그대로 사용 |
 | `institution` | (memo로 저장) | 실제 기관명 → memo 필드에 저장 |
 | `balance` | `balance` | float → bigint (반올림) |
-| `owner` | `owner` | 운섭/아름/공동 그대로 |
+| `owner` | `owner` | Owner/Spouse/공동 그대로 |
 
 **snapshot_date 계산:**
 ```python
@@ -121,7 +121,7 @@ npx tsx scripts/migrate.ts --dry-run             # 검증 모드
 
 ## 5. 검증 체크리스트
 
-마이그레이션 후 운섭이 직접 확인:
+마이그레이션 후 Owner가 직접 확인:
 
 ```
 □ Supabase 대시보드 transactions 테이블 행수: 3,075건 ±5건

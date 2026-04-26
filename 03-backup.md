@@ -138,7 +138,7 @@ curl -X GET https://heeone-finance.vercel.app/api/cron/monthly-backup \
 
 ---
 
-## 7. 운섭 월초 검증 체크리스트
+## 7. Owner 월초 검증 체크리스트
 
 1. 구글시트 `Transactions_Backup`에서 전월 행 건수 확인
 2. 수입/지출 합계가 대시보드와 일치하는지 확인

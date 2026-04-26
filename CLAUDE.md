@@ -1,4 +1,4 @@
-# CLAUDE.md — 희온이네 AI 재정 비서 에이전트 컨텍스트
+# CLAUDE.md — AI Finance Management 에이전트 컨텍스트
 
 > Claude Code가 매 세션 자동으로 읽는 핵심 컨텍스트.
 

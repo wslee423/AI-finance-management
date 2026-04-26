@@ -1,4 +1,4 @@
-# ARCHITECTURE.md — 희온이네 AI 재정 비서
+# ARCHITECTURE.md — AI Finance Management
 
 > 기술 스택 결정 및 전체 구조 참조 문서.
 > DB 스키마 상세는 `product-specs/01-db-schema.md`가 기준.

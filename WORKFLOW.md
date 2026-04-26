@@ -1,4 +1,4 @@
-# WORKFLOW.md — 희온이네 AI 재정 비서 개발 워크플로우
+# WORKFLOW.md — AI Finance Management 개발 워크플로우
 
 > AGENTS.md에서 참조하는 작업 분류 기준 및 실행 절차 정의.
 

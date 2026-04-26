@@ -1,4 +1,4 @@
-# QUALITY_SCORE.md — 희온이네 AI 재정 비서 품질 기준
+# QUALITY_SCORE.md — AI Finance Management 품질 기준
 
 > Core Layer `QUALITY_SCORE_BASE.md` + 금융 서비스 특화 기준 추가.
 > Reviewer 에이전트가 `/review` 실행 시 이 체크리스트를 순서대로 확인한다.

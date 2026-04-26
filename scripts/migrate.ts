@@ -299,7 +299,7 @@ async function migrateDividend(wb: XLSX.WorkBook) {
 // ─── 메인 ────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log(`\n희온이네 재정 비서 — 마이그레이션 스크립트`)
+  console.log(`\nAI Finance Management — 마이그레이션 스크립트`)
   console.log(`소스: ${XLSX_PATH}`)
   console.log(`모드: ${isDryRun ? '🔍 DRY RUN (DB 변경 없음)' : '🚀 실제 실행'}`)
   console.log(`대상: ${targetSheet ?? '전체 시트'}`)

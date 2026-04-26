@@ -1,4 +1,4 @@
-# CONSTITUTION.md — 희온이네 AI 재정 비서
+# CONSTITUTION.md — AI Finance Management
 
 > 모든 문서 중 최상위 권위. 에이전트와 사람 모두 이 원칙에 따라 행동한다.
 > **개정 실행은 운섭만** 가능하다.

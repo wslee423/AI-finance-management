@@ -1,4 +1,4 @@
-# AGENTS.md — 희온이네 AI 재정 비서 에이전트 운영 가이드
+# AGENTS.md — AI Finance Management 에이전트 운영 가이드
 
 > 에이전트 구조: **Orchestrator 패턴 (수직형)**
 > 비개발자 환경 (Claude Code + AI 코딩 툴 의존) 최적화

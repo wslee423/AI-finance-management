@@ -1,4 +1,4 @@
-# PLANS.md — 희온이네 AI 재정 비서 개발 로드맵
+# PLANS.md — AI Finance Management 개발 로드맵
 
 > 매 세션 시작 시 현재 위치 확인용. Phase Gate 통과 후 다음 Phase 진입.
 

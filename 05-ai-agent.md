@@ -290,7 +290,7 @@ A: "현재 포트폴리오 상황을 보면요.
 
 ### 6-1. 설정
 ```
-봇 이름: 희온이네 재정 비서
+봇 이름: AI Finance Management
 허용 chat_id: 운섭 + 아름 2개만 (환경변수 TELEGRAM_ALLOWED_CHAT_IDS)
 ```
 

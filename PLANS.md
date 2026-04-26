@@ -14,7 +14,7 @@
 
 | Phase | 이름 | 기간 | 상태 |
 |-------|------|------|------|
-| Phase 1 | 기반 세팅 | 2주 | 🔲 |
+| Phase 1 | 기반 세팅 | 2주 | ✅ |
 | Phase 2 | 데이터 관리 (Admin) | 3주 | 🔲 |
 | Phase 3 | 재정 대시보드 | 3주 | 🔲 |
 | Phase 4 | AI 재정 에이전트 | 3주 | 🔲 |
@@ -28,21 +28,21 @@
 ## Phase 1 — 기반 세팅
 
 **Phase Gate (모두 통과해야 Phase 2 진입 가능)**
-- [ ] Next.js 프로젝트 생성 + Vercel 배포 확인
-- [ ] Supabase 프로젝트 생성 + 환경변수 연결
-- [ ] 4개 테이블 스키마 생성 (transactions, assets, dividend, preset_templates)
-- [ ] RLS 정책 + updated_at 트리거 적용
-- [ ] Supabase Auth 설정 (Owner·Spouse 이메일 whitelist, 신규 가입 차단)
-- [ ] 로그인/로그아웃 기본 동작 확인
-- [ ] `npm run typecheck && npm run lint` 경고 0건
+- [x] Next.js 프로젝트 생성 + 개발 서버 동작 확인
+- [x] Supabase 프로젝트 생성 + 환경변수 연결
+- [x] 5개 테이블 스키마 생성 (transactions, assets, dividend, preset_templates, backup_logs)
+- [x] RLS 정책 + updated_at 트리거 적용
+- [x] Supabase Auth 설정 (Owner·Spouse 계정 생성)
+- [x] 로그인/로그아웃 기본 동작 확인
+- [x] `npm run typecheck && npm run lint` 경고 0건
 
 **작업 목록**
-- [ ] Next.js 15 App Router + TypeScript strict 초기화
-- [ ] Tailwind CSS 설정
-- [ ] Supabase client 설정 (server/client 분리 — `lib/supabase/server.ts`, `lib/supabase/client.ts`)
-- [ ] DB 스키마 마이그레이션 (`product-specs/01-db-schema.md` 기준)
-- [ ] 인증 미들웨어 (미인증 → `/login` 리다이렉트)
-- [ ] 기본 레이아웃 (사이드바 + 헤더)
+- [x] Next.js 15 App Router + TypeScript strict 초기화
+- [x] Tailwind CSS 설정
+- [x] Supabase client 설정 (server/client 분리 — `lib/supabase/server.ts`, `lib/supabase/client.ts`)
+- [x] DB 스키마 마이그레이션 (supabase/schema.sql 기준)
+- [x] 인증 미들웨어 (미인증 → `/login` 리다이렉트)
+- [x] 기본 레이아웃 (사이드바 + 헤더)
 
 ---
 

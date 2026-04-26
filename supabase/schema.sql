@@ -1,5 +1,5 @@
 -- ============================================================
--- AI Finance Management — DB 스키마
+-- AI Finance Management — DB 스키마 (수정판)
 -- Supabase SQL Editor에서 순서대로 실행
 -- ============================================================
 
@@ -94,11 +94,13 @@ begin
 end;
 $$;
 
-create or replace trigger trg_transactions_updated_at
+drop trigger if exists trg_transactions_updated_at on transactions;
+create trigger trg_transactions_updated_at
   before update on transactions
   for each row execute function set_updated_at();
 
-create or replace trigger trg_preset_updated_at
+drop trigger if exists trg_preset_updated_at on preset_templates;
+create trigger trg_preset_updated_at
   before update on preset_templates
   for each row execute function set_updated_at();
 
@@ -109,39 +111,52 @@ alter table dividend          enable row level security;
 alter table preset_templates  enable row level security;
 alter table backup_logs       enable row level security;
 
--- 8. 허용 사용자 확인 함수
--- 아래 이메일 값은 실제 이메일로 교체 후 실행
-create or replace function is_allowed_user()
-returns boolean language sql security definer as $$
-  select auth.email() = any(
-    array[
-      current_setting('app.allowed_email_owner', true),
-      current_setting('app.allowed_email_spouse', true)
-    ]
-  );
-$$;
+-- 8. RLS 정책 (인증된 사용자만 접근)
+-- 주의: Supabase Auth의 사용자만 접근 가능. 신규 가입 비활성화 상태에서만 사용.
 
--- 9. RLS 정책
 -- transactions
-create policy "tr_select" on transactions for select using (is_allowed_user() and deleted_at is null);
-create policy "tr_insert" on transactions for insert with check (is_allowed_user());
-create policy "tr_update" on transactions for update using (is_allowed_user());
+drop policy if exists "tr_select" on transactions;
+create policy "tr_select" on transactions for select using (auth.role() = 'authenticated' and deleted_at is null);
+
+drop policy if exists "tr_insert" on transactions;
+create policy "tr_insert" on transactions for insert with check (auth.role() = 'authenticated');
+
+drop policy if exists "tr_update" on transactions;
+create policy "tr_update" on transactions for update using (auth.role() = 'authenticated');
 
 -- assets
-create policy "as_select" on assets for select using (is_allowed_user());
-create policy "as_insert" on assets for insert with check (is_allowed_user());
-create policy "as_update" on assets for update using (is_allowed_user());
+drop policy if exists "as_select" on assets;
+create policy "as_select" on assets for select using (auth.role() = 'authenticated');
+
+drop policy if exists "as_insert" on assets;
+create policy "as_insert" on assets for insert with check (auth.role() = 'authenticated');
+
+drop policy if exists "as_update" on assets;
+create policy "as_update" on assets for update using (auth.role() = 'authenticated');
 
 -- dividend
-create policy "div_select" on dividend for select using (is_allowed_user());
-create policy "div_insert" on dividend for insert with check (is_allowed_user());
-create policy "div_update" on dividend for update using (is_allowed_user());
+drop policy if exists "div_select" on dividend;
+create policy "div_select" on dividend for select using (auth.role() = 'authenticated');
+
+drop policy if exists "div_insert" on dividend;
+create policy "div_insert" on dividend for insert with check (auth.role() = 'authenticated');
+
+drop policy if exists "div_update" on dividend;
+create policy "div_update" on dividend for update using (auth.role() = 'authenticated');
 
 -- preset_templates
-create policy "pre_select" on preset_templates for select using (is_allowed_user());
-create policy "pre_insert" on preset_templates for insert with check (is_allowed_user());
-create policy "pre_update" on preset_templates for update using (is_allowed_user());
+drop policy if exists "pre_select" on preset_templates;
+create policy "pre_select" on preset_templates for select using (auth.role() = 'authenticated');
+
+drop policy if exists "pre_insert" on preset_templates;
+create policy "pre_insert" on preset_templates for insert with check (auth.role() = 'authenticated');
+
+drop policy if exists "pre_update" on preset_templates;
+create policy "pre_update" on preset_templates for update using (auth.role() = 'authenticated');
 
 -- backup_logs
-create policy "log_select" on backup_logs for select using (is_allowed_user());
-create policy "log_insert" on backup_logs for insert with check (is_allowed_user());
+drop policy if exists "log_select" on backup_logs;
+create policy "log_select" on backup_logs for select using (auth.role() = 'authenticated');
+
+drop policy if exists "log_insert" on backup_logs;
+create policy "log_insert" on backup_logs for insert with check (auth.role() = 'authenticated');

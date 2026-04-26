@@ -44,36 +44,38 @@
 
 ---
 
-## 문서 구조
+## 파일 구조
 
 ```
-├── CONSTITUTION.md          최상위 불변 원칙
-├── CLAUDE.md                에이전트 세션 자동로드 컨텍스트
-├── AGENTS.md                에이전트 역할 & 자율 범위
-├── WORKFLOW.md              개발 워크플로우 (Feature 분류, 재시도, Git 규칙)
-├── PLANS.md                 Phase별 개발 로드맵
-├── QUALITY_SCORE.md         품질 검증 기준 (Reviewer 체크리스트)
-├── ARCHITECTURE.md          기술 스택 & 폴더 구조
-├── MIGRATION.md             구글시트 → Supabase 마이그레이션 가이드
-├── open-decisions.md        의사결정 추적 (OD-001~005 완료)
-├── tech-debt.md             기술 부채 추적
-├── NEXT_SESSION.md          다음 세션 핸드오프
+├── README.md                    GitHub 표지
+├── CLAUDE.md                    Claude Code 자동 로드 컨텍스트
 │
-├── 01-db-schema.md          DB 스키마 & RLS & TypeScript 타입
-├── 02-admin-data-entry.md   Admin 데이터 입력 UI 스펙
-├── 03-backup.md             월말 자동 백업 스펙
-├── 04-dashboard.md          재정 대시보드 스펙
-├── 05-ai-agent.md           AI 재정 에이전트 스펙
+├── docs/                        프로젝트 운영 문서
+│   ├── CONSTITUTION.md          최상위 불변 원칙
+│   ├── AGENTS.md                에이전트 역할 & 자율 범위
+│   ├── PLANS.md                 Phase별 개발 로드맵
+│   ├── WORKFLOW.md              개발 워크플로우
+│   ├── ARCHITECTURE.md          기술 스택 & 폴더 구조
+│   ├── QUALITY_SCORE.md         품질 검증 기준
+│   ├── MIGRATION.md             데이터 마이그레이션 가이드
+│   ├── NEXT_SESSION.md          다음 세션 핸드오프
+│   ├── open-decisions.md        의사결정 추적
+│   ├── tech-debt.md             기술 부채 추적
+│   ├── lessons_learned.md       트러블슈팅 & 재사용 패턴
+│   └── specs/                   기능별 상세 스펙
+│       ├── 01-db-schema.md
+│       ├── 02-admin-data-entry.md
+│       ├── 03-backup.md
+│       ├── 04-dashboard.md
+│       └── 05-ai-agent.md
 │
-├── scripts/
-│   └── migrate.ts           구글시트 → Supabase 마이그레이션 스크립트
-│
-└── .claude/
-    ├── settings.json        Claude Code 권한 설정
-    └── commands/
-        ├── orchestrate.md   /orchestrate 커맨드
-        ├── review.md        /review 커맨드
-        └── sync-docs.md     /sync-docs 커맨드
+├── app/                         Next.js App Router
+├── components/                  React 컴포넌트
+├── lib/                         서버/클라이언트 유틸
+├── types/                       TypeScript 타입
+├── scripts/                     1회성 스크립트
+├── supabase/                    DB 스키마 SQL
+└── .claude/                     Claude Code 설정 & 커맨드
 ```
 
 ---

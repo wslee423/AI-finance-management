@@ -51,10 +51,8 @@ function toAmount(value: unknown): number {
 
 function normalizeUser(user: unknown): string {
   const u = String(user ?? '').trim()
-  const map: Record<string, string> = {
-    'Owner': 'Owner', 'Spouse': 'Spouse', 'Child': 'Child', '공동': '공동',
-  }
-  return map[u] ?? '공동'
+  const valid = ['운섭', '아름', '희온', '공동']
+  return valid.includes(u) ? u : '공동'
 }
 
 function normalizeCategory(type: unknown): string {
@@ -139,14 +137,11 @@ async function migrateTransactions(wb: XLSX.WorkBook) {
     return toInsert.length
   }
 
-  // 배치 upsert (500건씩)
+  // 배치 insert (500건씩) — 1회성 마이그레이션
   let inserted = 0
   for (let i = 0; i < toInsert.length; i += 500) {
     const batch = toInsert.slice(i, i + 500)
-    const { error } = await supabase.from('transactions').upsert(batch, {
-      onConflict: 'date,amount,category,user_name',
-      ignoreDuplicates: true,
-    })
+    const { error } = await supabase.from('transactions').insert(batch)
     if (error) {
       console.error(`  배치 ${i}~${i + batch.length} 오류:`, error.message)
     } else {
@@ -214,10 +209,7 @@ async function migrateAssets(wb: XLSX.WorkBook) {
   let inserted = 0
   for (let i = 0; i < toInsert.length; i += 500) {
     const batch = toInsert.slice(i, i + 500)
-    const { error } = await supabase.from('assets').upsert(batch, {
-      onConflict: 'snapshot_date,asset_type,institution,owner',
-      ignoreDuplicates: true,
-    })
+    const { error } = await supabase.from('assets').insert(batch)
     if (error) {
       console.error(`  배치 오류:`, error.message)
     } else {
@@ -281,10 +273,7 @@ async function migrateDividend(wb: XLSX.WorkBook) {
   let inserted = 0
   for (let i = 0; i < toInsert.length; i += 100) {
     const batch = toInsert.slice(i, i + 100)
-    const { error } = await supabase.from('dividend').upsert(batch, {
-      onConflict: 'date,ticker_symbol,usd_amount',
-      ignoreDuplicates: true,
-    })
+    const { error } = await supabase.from('dividend').insert(batch)
     if (error) {
       console.error(`  배치 오류:`, error.message)
     } else {

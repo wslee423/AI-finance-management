@@ -1,18 +1,17 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { type Asset, type AssetType, type UserName } from '@/types'
+import { type Asset, type AssetType, type AssetOwner, ASSET_OWNERS } from '@/types'
 import { formatCurrency, getMonthLastDay } from '@/lib/utils'
 import Toast from '@/components/ui/Toast'
 
 const ASSET_TYPES: AssetType[] = ['부동산', '통장', '연금', '예적금', '기타', '대출']
-const OWNERS: UserName[] = ['Owner', 'Spouse', 'Shared']
 
 interface AssetRow {
   id?: string
   asset_type: AssetType
   institution: string
-  owner: UserName
+  owner: AssetOwner
   balance: string
   contribution_rate: string
   memo: string
@@ -77,7 +76,7 @@ export default function AssetsPage() {
   }
 
   function addRow() {
-    setRows(r => [...r, { asset_type: '통장', institution: '', owner: 'Owner', balance: '0', contribution_rate: '', memo: '' }])
+    setRows(r => [...r, { asset_type: '통장', institution: '', owner: '운섭', balance: '0', contribution_rate: '', memo: '' }])
   }
 
   function removeRow(i: number) {
@@ -176,9 +175,9 @@ export default function AssetsPage() {
                       placeholder="기관명" className="w-full px-2 py-1 text-sm border border-gray-300 rounded" />
                   </td>
                   <td className="px-3 py-2">
-                    <select value={row.owner} onChange={e => setRows(r => r.map((x,j)=>j===i?{...x,owner:e.target.value as UserName}:x))}
+                    <select value={row.owner} onChange={e => setRows(r => r.map((x,j)=>j===i?{...x,owner:e.target.value as AssetOwner}:x))}
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded">
-                      {OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+                      {ASSET_OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
                     </select>
                   </td>
                   <td className="px-3 py-2">

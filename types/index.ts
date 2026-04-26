@@ -1,5 +1,6 @@
 export type ClassType = '수입' | '지출'
-export type UserName = 'Owner' | 'Spouse' | 'Child' | 'Shared'
+export type UserName = '운섭' | '아름' | '희온' | '공동'
+export type AssetOwner = '운섭' | '아름' | '공동'
 export type AssetType = '부동산' | '통장' | '연금' | '예적금' | '기타' | '대출'
 
 export interface Transaction {
@@ -23,7 +24,7 @@ export interface Asset {
   snapshot_date: string
   asset_type: AssetType
   institution: string
-  owner: UserName
+  owner: AssetOwner
   balance: number
   contribution_rate: number | null
   memo: string | null
@@ -69,4 +70,5 @@ export const SUBCATEGORIES: Record<string, string[]> = {
   기타지출: ['경조사', '기타'],
 }
 
-export const USER_NAMES: UserName[] = ['Owner', 'Spouse', 'Child', 'Shared']
+export const USER_NAMES: UserName[] = ['운섭', '아름', '희온', '공동']
+export const ASSET_OWNERS: AssetOwner[] = ['운섭', '아름', '공동']

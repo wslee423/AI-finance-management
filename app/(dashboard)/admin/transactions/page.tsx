@@ -14,7 +14,7 @@ const EMPTY_FORM = {
   category: '변동지출',
   subcategory: '',
   item: '',
-  user_name: 'Shared' as UserName,
+  user_name: '공동' as UserName,
   amount: '',
   memo: '',
 }

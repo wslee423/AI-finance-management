@@ -10,7 +10,7 @@ const EMPTY_FORM = {
   category: '고정지출',
   subcategory: '',
   item: '',
-  user_name: 'Shared' as UserName,
+  user_name: '공동' as UserName,
   memo: '',
   amount: '',
 }

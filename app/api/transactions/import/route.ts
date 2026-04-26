@@ -15,12 +15,7 @@ type ImportRow = {
   error?: string
 }
 
-const USER_MAP: Record<string, string> = {
-  'owner': 'Owner', 'Owner': 'Owner',
-  'spouse': 'Spouse', 'Spouse': 'Spouse',
-  'child': 'Child', 'Child': 'Child',
-  '공동': 'Shared', 'shared': 'Shared', 'Shared': 'Shared',
-}
+const VALID_USERS = ['운섭', '아름', '희온', '공동']
 
 function toDateStr(value: unknown): string | null {
   if (!value) return null
@@ -41,7 +36,7 @@ function normalizeCategory(type: unknown): string {
 
 function normalizeUser(user: unknown): string {
   const u = String(user ?? '').trim()
-  return USER_MAP[u] ?? 'Shared'
+  return VALID_USERS.includes(u) ? u : '공동'
 }
 
 // 지원 컬럼명 (기존 구글시트 형식 + 간편 형식 모두)

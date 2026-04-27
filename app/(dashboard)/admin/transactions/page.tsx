@@ -7,6 +7,7 @@ import Toast from '@/components/ui/Toast'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import PresetModal from '@/components/admin/PresetModal'
 import ImportModal from '@/components/admin/ImportModal'
+import TagInput from '@/components/admin/TagInput'
 
 const makeEmptyForm = () => ({
   date: getTodayStr(),
@@ -17,6 +18,7 @@ const makeEmptyForm = () => ({
   user_name: '공동' as UserName,
   amount: '',
   memo: '',
+  tags: '',
 })
 
 const CLASS_BADGE: Record<string, string> = {
@@ -44,6 +46,11 @@ export default function TransactionsPage() {
   const [editId, setEditId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [allTags, setAllTags] = useState<string[]>([])
+
+  useEffect(() => {
+    fetch('/api/tags').then(r => r.json()).then(setAllTags).catch(() => {})
+  }, [])
 
   // 필터 상태
   const [filterClass, setFilterClass] = useState('전체')
@@ -105,6 +112,7 @@ export default function TransactionsPage() {
       user_name: t.user_name,
       amount: String(t.amount),
       memo: t.memo ?? '',
+      tags: t.tags ?? '',
     })
     setEditId(t.id)
     setShowForm(true)
@@ -112,7 +120,14 @@ export default function TransactionsPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const payload = { ...form, amount: Number(form.amount), subcategory: form.subcategory || null, item: form.item || null, memo: form.memo || null }
+    const payload = {
+      ...form,
+      amount: Number(form.amount),
+      subcategory: form.subcategory || null,
+      item: form.item || null,
+      memo: form.memo || null,
+      tags: form.tags || null,
+    }
     try {
       const res = editId
         ? await fetch(`/api/transactions/${editId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -212,15 +227,21 @@ export default function TransactionsPage() {
               <input type="text" value={form.memo} onChange={e => setForm(f=>({...f, memo: e.target.value}))} placeholder="선택 입력" className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
             </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">사용자</label>
-            <div className="flex gap-1 flex-wrap">
-              {USER_NAMES.map(u => (
-                <button key={u} type="button" onClick={() => setForm(f=>({...f, user_name: u}))}
-                  className={`px-3 py-1.5 text-xs rounded-lg border ${form.user_name === u ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}`}>
-                  {u}
-                </button>
-              ))}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">사용자</label>
+              <div className="flex gap-1 flex-wrap">
+                {USER_NAMES.map(u => (
+                  <button key={u} type="button" onClick={() => setForm(f=>({...f, user_name: u}))}
+                    className={`px-3 py-1.5 text-xs rounded-lg border ${form.user_name === u ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}`}>
+                    {u}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">태그</label>
+              <TagInput value={form.tags} onChange={v => setForm(f => ({ ...f, tags: v }))} existingTags={allTags} />
             </div>
           </div>
           <div className="flex gap-2 justify-end">
@@ -282,7 +303,7 @@ export default function TransactionsPage() {
             <table className="w-full text-sm whitespace-nowrap">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {['날짜','분류','카테고리','세부카테고리','항목명','사용자','금액','메모',''].map(h => (
+                  {['날짜','분류','카테고리','세부카테고리','항목명','사용자','금액','메모','태그',''].map(h => (
                     <th key={h} className="px-3 py-3 text-left text-xs font-medium text-gray-500">{h}</th>
                   ))}
                 </tr>
@@ -315,6 +336,15 @@ export default function TransactionsPage() {
                       ) : (
                         <span className="text-gray-300">-</span>
                       )}
+                    </td>
+                    <td className="px-3 py-2.5 max-w-40">
+                      {t.tags ? (
+                        <div className="flex flex-wrap gap-0.5">
+                          {t.tags.split(',').map(tag => tag.trim()).filter(Boolean).map(tag => (
+                            <span key={tag} className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-xs rounded-full whitespace-nowrap">{tag}</span>
+                          ))}
+                        </div>
+                      ) : <span className="text-gray-300 text-xs">-</span>}
                     </td>
                     <td className="px-3 py-2.5">
                       <div className="flex gap-2">

@@ -271,6 +271,31 @@ export async function getPersonalNetworth() {
   return { snapshotDate: latest.snapshot_date, owner, spouse, ownerTotal: owner.reduce((s, v) => s + v.balance, 0), spouseTotal: spouse.reduce((s, v) => s + v.balance, 0) }
 }
 
+// ─── 태그별 지출 합계 Top 10 ──────────────────────────────────────────────────
+export async function getTagBreakdown(from?: string, to?: string) {
+  const supabase = await createClient()
+  const data = await fetchAll<{ tags: string | null; amount: number }>(
+    supabase, 'transactions', 'tags, amount', q => {
+      let r = q.is('deleted_at', null).eq('class', '지출').not('tags', 'is', null).neq('tags', '')
+      if (from) r = r.gte('date', `${from}-01`)
+      if (to) { const [y, m] = to.split('-').map(Number); r = r.lte('date', `${to}-${new Date(y, m, 0).getDate()}`) }
+      return r
+    }
+  )
+
+  const tagMap = new Map<string, number>()
+  for (const t of data) {
+    if (!t.tags) continue
+    t.tags.split(',').map(tag => tag.trim()).filter(Boolean).forEach(tag => {
+      tagMap.set(tag, (tagMap.get(tag) ?? 0) + t.amount)
+    })
+  }
+  return Array.from(tagMap.entries())
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10)
+    .map(([tag, amount]) => ({ tag, amount }))
+}
+
 // ─── 종목별 배당금 시계열 ──────────────────────────────────────────────────────
 export async function getDividendByTicker() {
   const supabase = await createClient()

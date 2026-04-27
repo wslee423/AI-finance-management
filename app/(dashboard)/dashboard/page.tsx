@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import {
   getKpi, getMonthlySummary, getCategoryBreakdown, getNetworthHistory,
   getSavingsRate, getYearlyContribution, getDividendSummary,
-  getRecentAssets, getDividendByTicker,
+  getRecentAssets, getDividendByTicker, getTagBreakdown,
 } from '@/lib/dashboard/queries'
 import PeriodFilter from '@/components/dashboard/PeriodFilter'
 import KpiCards from '@/components/dashboard/KpiCards'
@@ -17,6 +17,7 @@ import DividendSection from '@/components/dashboard/DividendSection'
 import DividendTickerChart from '@/components/dashboard/DividendTickerChart'
 import DividendCumulativeChart from '@/components/dashboard/DividendCumulativeChart'
 import RecentAssets from '@/components/dashboard/RecentAssets'
+import TagBreakdown from '@/components/dashboard/TagBreakdown'
 
 function periodToRange(period: string): { from?: string; to?: string } {
   if (period === 'all') return {}
@@ -76,7 +77,7 @@ export default async function DashboardPage({
   const { period = 'all' } = await searchParams
   const { from, to } = periodToRange(period)
 
-  const [kpi, monthly, category, networth, savingsRate, yearly, dividend, recentAssets, dividendTicker] = await Promise.all([
+  const [kpi, monthly, category, networth, savingsRate, yearly, dividend, recentAssets, dividendTicker, tagBreakdown] = await Promise.all([
     getKpi(from, to),
     getMonthlySummary(from, to),
     getCategoryBreakdown(from, to),
@@ -86,6 +87,7 @@ export default async function DashboardPage({
     getDividendSummary(),
     getRecentAssets(5),
     getDividendByTicker(),
+    getTagBreakdown(from, to),
   ])
 
   return (
@@ -123,6 +125,10 @@ export default async function DashboardPage({
             <YearlyContribution data={yearly} />
           </Section>
         </div>
+
+        <Section title="태그별 지출 Top 10">
+          <TagBreakdown data={tagBreakdown} />
+        </Section>
       </SectionGroup>
 
       {/* ── 자산 현황 ── */}

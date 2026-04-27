@@ -19,6 +19,9 @@ import RecentAssets from '@/components/dashboard/RecentAssets'
 
 function periodToRange(period: string): { from?: string; to?: string } {
   if (period === 'all') return {}
+  // YYYY-MM 형식 (월별)
+  if (/^\d{4}-\d{2}$/.test(period)) return { from: period, to: period }
+  // YYYY 형식 (연간)
   const year = Number(period)
   if (!isNaN(year)) return { from: `${year}-01`, to: `${year}-12` }
   return {}

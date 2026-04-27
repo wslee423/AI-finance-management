@@ -34,16 +34,26 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-// 대주제 구분 그룹
-function SectionGroup({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
+const GROUP_COLORS = {
+  blue:   { header: 'bg-blue-600',    light: 'bg-blue-50/60',    border: 'border-blue-200' },
+  green:  { header: 'bg-emerald-600', light: 'bg-emerald-50/60', border: 'border-emerald-200' },
+  purple: { header: 'bg-violet-600',  light: 'bg-violet-50/60',  border: 'border-violet-200' },
+} as const
+
+// 대주제 구분 그룹 — 컬러 헤더 배너
+function SectionGroup({
+  icon, title, color, children,
+}: {
+  icon: string; title: string; color: keyof typeof GROUP_COLORS; children: React.ReactNode
+}) {
+  const c = GROUP_COLORS[color]
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-lg">{icon}</span>
-        <h2 className="text-base font-bold text-gray-800">{title}</h2>
-        <div className="flex-1 h-px bg-gray-200 ml-2" />
+    <div className={`border ${c.border} rounded-2xl overflow-hidden shadow-sm`}>
+      <div className={`${c.header} px-6 py-4 flex items-center gap-3`}>
+        <span className="text-2xl">{icon}</span>
+        <h2 className="text-base font-bold text-white tracking-wide">{title}</h2>
       </div>
-      <div className="space-y-4">
+      <div className={`${c.light} p-5 space-y-4`}>
         {children}
       </div>
     </div>
@@ -89,7 +99,7 @@ export default async function DashboardPage({
       <KpiCards data={kpi} />
 
       {/* ── 재정 현황 ── */}
-      <SectionGroup icon="📊" title="재정 현황">
+      <SectionGroup icon="📊" title="재정 현황" color="blue">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
             <Section title="월별 수입 vs 지출">
@@ -112,7 +122,7 @@ export default async function DashboardPage({
       </SectionGroup>
 
       {/* ── 자산 현황 ── */}
-      <SectionGroup icon="🏦" title="자산 현황">
+      <SectionGroup icon="🏦" title="자산 현황" color="green">
         <Section title="순자산 성장">
           <NetWorthChart data={networth} />
         </Section>
@@ -122,7 +132,7 @@ export default async function DashboardPage({
       </SectionGroup>
 
       {/* ── 배당금 ── */}
-      <SectionGroup icon="💰" title="배당금">
+      <SectionGroup icon="💰" title="배당금" color="purple">
         <Section title="종목별 배당금 추이">
           <DividendTickerChart tickers={dividendTicker.tickers} series={dividendTicker.series} />
         </Section>

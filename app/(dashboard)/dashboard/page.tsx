@@ -15,6 +15,7 @@ import SavingsRateChart from '@/components/dashboard/SavingsRateChart'
 import YearlyContribution from '@/components/dashboard/YearlyContribution'
 import DividendSection from '@/components/dashboard/DividendSection'
 import DividendTickerChart from '@/components/dashboard/DividendTickerChart'
+import DividendCumulativeChart from '@/components/dashboard/DividendCumulativeChart'
 import RecentAssets from '@/components/dashboard/RecentAssets'
 
 function periodToRange(period: string): { from?: string; to?: string } {
@@ -136,6 +137,9 @@ export default async function DashboardPage({
 
       {/* ── 배당금 ── */}
       <SectionGroup icon="💰" title="배당금" color="purple">
+        <Section title="누적 배당금">
+          <DividendCumulativeChart tickers={dividendTicker.tickers} series={dividendTicker.series} />
+        </Section>
         <Section title="종목별 배당금 추이">
           <DividendTickerChart tickers={dividendTicker.tickers} series={dividendTicker.series} />
         </Section>

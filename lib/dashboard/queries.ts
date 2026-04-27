@@ -270,3 +270,39 @@ export async function getPersonalNetworth() {
   const spouse = toArr(spouseMap)
   return { snapshotDate: latest.snapshot_date, owner, spouse, ownerTotal: owner.reduce((s, v) => s + v.balance, 0), spouseTotal: spouse.reduce((s, v) => s + v.balance, 0) }
 }
+
+// ─── 종목별 배당금 시계열 ──────────────────────────────────────────────────────
+export async function getDividendByTicker() {
+  const supabase = await createClient()
+  const data = await fetchAll<{ date: string; ticker_name: string; ticker_symbol: string | null; krw_amount: number }>(
+    supabase, 'dividend', 'date, ticker_name, ticker_symbol, krw_amount', q => q.order('date')
+  )
+
+  // 종목 목록 (ticker_symbol 또는 ticker_name 기준)
+  const tickerSet = new Map<string, string>() // symbol → name
+  for (const d of data) {
+    const key = d.ticker_symbol ?? d.ticker_name
+    tickerSet.set(key, d.ticker_name)
+  }
+
+  // 종목별 월별 집계
+  const byTicker = new Map<string, Map<string, number>>()
+  for (const d of data) {
+    const key = d.ticker_symbol ?? d.ticker_name
+    const month = d.date.slice(0, 7)
+    const tickerMap = byTicker.get(key) ?? new Map<string, number>()
+    tickerMap.set(month, (tickerMap.get(month) ?? 0) + d.krw_amount)
+    byTicker.set(key, tickerMap)
+  }
+
+  const tickers = Array.from(tickerSet.entries()).map(([symbol, name]) => ({ symbol, name }))
+  const series = Array.from(byTicker.entries()).map(([symbol, monthMap]) => ({
+    symbol,
+    name: tickerSet.get(symbol) ?? symbol,
+    data: Array.from(monthMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, amount]) => ({ month, amount })),
+  }))
+
+  return { tickers, series }
+}

@@ -14,11 +14,11 @@ export const TOOLS: ChatCompletionTool[] = [
         properties: {
           from: { type: 'string', description: '시작 날짜 (YYYY-MM 또는 YYYY-MM-DD)' },
           to: { type: 'string', description: '종료 날짜 (YYYY-MM 또는 YYYY-MM-DD). 미지정 시 오늘까지' },
-          class_type: { type: 'string', enum: ['수입', '지출'], description: '거래 유형' },
-          category: { type: 'string', description: '카테고리 (고정지출, 변동지출, 기타지출, 주수입, 기타수입)' },
+          class_type: { type: 'string', enum: ['수입', '지출', '이체'], description: '거래 유형 (이체=저축/투자)' },
+          category: { type: 'string', description: '카테고리 (고정지출, 변동지출, 기타지출, 주수입, 기타수입 등)' },
           subcategory: { type: 'string', description: '서브카테고리 (외식비, 보험, 경조사 등)' },
-          user_name: { type: 'string', enum: ['Owner', 'Spouse', 'Child', 'Shared'], description: '사용자' },
-          tags: { type: 'array', items: { type: 'string' }, description: '태그 필터 (#육아 등)' },
+          user_name: { type: 'string', enum: ['운섭', '아름', '희온', '공동'], description: '가족 구성원' },
+          tags: { type: 'string', description: '태그 키워드 검색 (예: #육아, #부동산). 쉼표 구분 문자열' },
           keyword: { type: 'string', description: '메모/항목명 키워드 검색' },
           aggregate: {
             type: 'string',
@@ -40,7 +40,7 @@ export const TOOLS: ChatCompletionTool[] = [
         type: 'object',
         properties: {
           snapshot_date: { type: 'string', description: '조회할 월 (YYYY-MM). 미지정 시 최신 스냅샷' },
-          owner: { type: 'string', enum: ['Owner', 'Spouse', 'Shared', 'all'], description: '소유자 필터. 기본: all' },
+          owner: { type: 'string', enum: ['운섭', '아름', '공동', 'all'], description: '소유자 필터. 기본: all' },
           asset_type: { type: 'string', description: '자산 유형 필터 (부동산, 통장, 연금, 예적금, 기타, 대출)' },
           history: { type: 'boolean', description: 'true면 전체 추이 반환' },
         },
@@ -125,7 +125,7 @@ export async function executeToolCall(name: string, args: Record<string, unknown
 
 type TxArgs = {
   from: string; to?: string; class_type?: string; category?: string
-  subcategory?: string; user_name?: string; tags?: string[]
+  subcategory?: string; user_name?: string; tags?: string
   keyword?: string; aggregate?: string; limit?: number
 }
 
@@ -133,13 +133,11 @@ async function queryTransactions(args: Record<string, unknown>) {
   const supabase = await createClient()
   const { from, to, class_type, category, subcategory, user_name, tags, keyword, aggregate = 'sum', limit = 10 } = args as TxArgs
   const { fromDate, toDate } = toDateRange(from, to)
-  // list는 최대 10건 강제 (토큰 절약)
   const safeLimit = Math.min(Number(limit), 10)
 
-  // list는 표시용 컬럼만, 집계는 amount만 선택 (토큰 절약)
   const columns = aggregate === 'list'
-    ? 'date, class_type, category, subcategory, item, user_name, amount, memo'
-    : 'amount, class_type'
+    ? 'date, class, type, category, subcategory, item, user_name, amount, memo'
+    : 'amount, class'
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let q: any = supabase.from('transactions')
@@ -148,23 +146,22 @@ async function queryTransactions(args: Record<string, unknown>) {
     .gte('date', fromDate)
     .lte('date', toDate)
 
-  if (class_type) q = q.eq('class_type', class_type)
+  if (class_type) q = q.eq('class', class_type)
   if (category) q = q.eq('category', category)
   if (subcategory) q = q.ilike('subcategory', `%${subcategory}%`)
   if (user_name) q = q.eq('user_name', user_name)
-  if (tags?.length) q = q.contains('tags', tags)
+  if (tags) q = q.ilike('tags', `%${tags}%`)
   if (keyword) q = q.or(`memo.ilike.%${keyword}%,item.ilike.%${keyword}%`)
 
   if (aggregate === 'list') {
     q = q.order('date', { ascending: false }).limit(safeLimit)
   } else {
-    // 집계 시 limit 없이 전체 조회 (amount만 가져옴)
     q = q.order('date')
   }
 
   const { data, error } = await q
   if (error) throw new Error(error.message)
-  const rows = (data ?? []) as { amount: number; class_type: string }[]
+  const rows = (data ?? []) as { amount: number; class: string }[]
 
   if (aggregate === 'list') return { period: `${fromDate}~${toDate}`, count: rows.length, items: rows }
 
@@ -303,15 +300,15 @@ async function calculateSummary(args: Record<string, unknown>) {
     const { fromDate, toDate } = from ? toDateRange(from, to) : { fromDate: defaultFrom, toDate: now.toISOString().slice(0, 10) }
 
     const { data } = await supabase.from('transactions')
-      .select('class_type, amount')
+      .select('class, amount')
       .is('deleted_at', null)
-      .neq('class_type', '이체')
+      .neq('class', '이체')
       .gte('date', fromDate)
       .lte('date', toDate)
 
-    const rows = (data ?? []) as { class_type: string; amount: number }[]
-    const income = rows.filter(t => t.class_type === '수입').reduce((s, t) => s + t.amount, 0)
-    const expense = rows.filter(t => t.class_type === '지출').reduce((s, t) => s + t.amount, 0)
+    const rows = (data ?? []) as { class: string; amount: number }[]
+    const income = rows.filter(t => t['class'] === '수입').reduce((s, t) => s + t.amount, 0)
+    const expense = rows.filter(t => t['class'] === '지출').reduce((s, t) => s + t.amount, 0)
     return {
       period: `${fromDate}~${toDate}`,
       income, expense,
@@ -376,7 +373,7 @@ async function calculateSummary(args: Record<string, unknown>) {
       const { data } = await supabase.from('transactions')
         .select('amount')
         .is('deleted_at', null)
-        .eq('class_type', '지출')
+        .eq('class', '지출')
         .gte('date', pd.fromDate)
         .lte('date', pd.toDate)
       return ((data ?? []) as { amount: number }[]).reduce((s, t) => s + t.amount, 0)
@@ -399,7 +396,7 @@ async function calculateSummary(args: Record<string, unknown>) {
     const { data } = await supabase.from('transactions')
       .select('category, amount')
       .is('deleted_at', null)
-      .eq('class_type', '지출')
+      .eq('class', '지출')
       .gte('date', fromDate)
       .lte('date', toDate)
 

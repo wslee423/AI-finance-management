@@ -6,7 +6,7 @@ import { formatCurrency } from '@/lib/utils'
 interface ImportRow {
   row: number
   date: string
-  class_type: string
+  class: string
   category: string
   subcategory: string | null
   item: string | null
@@ -180,8 +180,8 @@ export default function ImportModal({ onClose, onSuccess }: ImportModalProps) {
                           {r.error ? (
                             <span className="text-red-600 text-xs">{r.error}</span>
                           ) : (
-                            <span className={`px-1.5 py-0.5 rounded text-xs ${r.class_type === '수입' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'}`}>
-                              {r.class_type}
+                            <span className={`px-1.5 py-0.5 rounded text-xs ${r.class === '수입' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'}`}>
+                              {r.class}
                             </span>
                           )}
                         </td>

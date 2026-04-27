@@ -30,8 +30,8 @@ export async function getKpi(from?: string, to?: string) {
   const supabase = await createClient()
 
   const [tx, div] = await Promise.all([
-    fetchAll<{ class_type: string; amount: number }>(supabase, 'transactions', 'class_type, amount', q => {
-      let r = q.is('deleted_at', null).neq('class_type', '이체')
+    fetchAll<{ class: string; amount: number }>(supabase, 'transactions', 'class, amount', q => {
+      let r = q.is('deleted_at', null).neq('class', '이체')
       if (from) r = r.gte('date', `${from}-01`)
       if (to) { const [y, m] = to.split('-').map(Number); r = r.lte('date', `${to}-${new Date(y, m, 0).getDate()}`) }
       return r
@@ -44,8 +44,8 @@ export async function getKpi(from?: string, to?: string) {
     }),
   ])
 
-  const income = tx.filter(t => t.class_type === '수입').reduce((s, t) => s + t.amount, 0)
-  const expense = tx.filter(t => t.class_type === '지출').reduce((s, t) => s + t.amount, 0)
+  const income = tx.filter(t => t.class === '수입').reduce((s, t) => s + t.amount, 0)
+  const expense = tx.filter(t => t.class === '지출').reduce((s, t) => s + t.amount, 0)
   return {
     income, expense,
     savingsRate: income > 0 ? Math.round(((income - expense) / income) * 10000) / 100 : 0,
@@ -56,9 +56,9 @@ export async function getKpi(from?: string, to?: string) {
 // ─── 월별 수입/지출 ───────────────────────────────────────────────────────────
 export async function getMonthlySummary(from?: string, to?: string) {
   const supabase = await createClient()
-  const data = await fetchAll<{ date: string; class_type: string; amount: number }>(
-    supabase, 'transactions', 'date, class_type, amount', q => {
-      let r = q.is('deleted_at', null).neq('class_type', '이체').order('date')
+  const data = await fetchAll<{ date: string; class: string; amount: number }>(
+    supabase, 'transactions', 'date, class, amount', q => {
+      let r = q.is('deleted_at', null).neq('class', '이체').order('date')
       if (from) r = r.gte('date', `${from}-01`)
       if (to) { const [y, m] = to.split('-').map(Number); r = r.lte('date', `${to}-${new Date(y, m, 0).getDate()}`) }
       return r
@@ -69,7 +69,7 @@ export async function getMonthlySummary(from?: string, to?: string) {
   for (const t of data) {
     const month = t.date.slice(0, 7)
     const cur = map.get(month) ?? { income: 0, expense: 0 }
-    if (t.class_type === '수입') cur.income += t.amount; else cur.expense += t.amount
+    if (t.class === '수입') cur.income += t.amount; else cur.expense += t.amount
     map.set(month, cur)
   }
   return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
@@ -81,7 +81,7 @@ export async function getCategoryBreakdown(from?: string, to?: string) {
   const supabase = await createClient()
   const data = await fetchAll<{ category: string; subcategory: string | null; amount: number }>(
     supabase, 'transactions', 'category, subcategory, amount', q => {
-      let r = q.is('deleted_at', null).eq('class_type', '지출')
+      let r = q.is('deleted_at', null).eq('class', '지출')
       if (from) r = r.gte('date', `${from}-01`)
       if (to) { const [y, m] = to.split('-').map(Number); r = r.lte('date', `${to}-${new Date(y, m, 0).getDate()}`) }
       return r
@@ -141,9 +141,9 @@ export async function getSavingsRate(from?: string, to?: string) {
 export async function getYearlyContribution() {
   const supabase = await createClient()
   const [tx, assets] = await Promise.all([
-    fetchAll<{ date: string; class_type: string; amount: number }>(
-      supabase, 'transactions', 'date, class_type, amount',
-      q => q.is('deleted_at', null).neq('class_type', '이체')
+    fetchAll<{ date: string; class: string; amount: number }>(
+      supabase, 'transactions', 'date, class, amount',
+      q => q.is('deleted_at', null).neq('class', '이체')
     ),
     fetchAll<{ snapshot_date: string; balance: number }>(
       supabase, 'assets', 'snapshot_date, balance', q => q.order('snapshot_date')
@@ -154,7 +154,7 @@ export async function getYearlyContribution() {
   for (const t of tx) {
     const year = Number(t.date.slice(0, 4))
     const cur = savingsByYear.get(year) ?? { income: 0, expense: 0 }
-    if (t.class_type === '수입') cur.income += t.amount; else cur.expense += t.amount
+    if (t.class === '수입') cur.income += t.amount; else cur.expense += t.amount
     savingsByYear.set(year, cur)
   }
 

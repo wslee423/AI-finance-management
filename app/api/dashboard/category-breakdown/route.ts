@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     .from('transactions')
     .select('category, subcategory, amount')
     .is('deleted_at', null)
-    .eq('class_type', '지출')
+    .eq('class', '지출')
 
   if (from) query = query.gte('date', `${from}-01`)
   if (to) {

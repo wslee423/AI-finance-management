@@ -13,9 +13,9 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from('transactions')
-    .select('date, class_type, amount')
+    .select('date, class, amount')
     .is('deleted_at', null)
-    .neq('class_type', '이체')
+    .neq('class', '이체')
     .order('date')
 
   if (from) query = query.gte('date', `${from}-01`)
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
   for (const t of data) {
     const month = t.date.slice(0, 7)
     const cur = map.get(month) ?? { income: 0, expense: 0 }
-    if (t.class_type === '수입') cur.income += t.amount
+    if (t.class === '수입') cur.income += t.amount
     else cur.expense += t.amount
     map.set(month, cur)
   }

@@ -10,7 +10,7 @@ import ImportModal from '@/components/admin/ImportModal'
 
 const makeEmptyForm = () => ({
   date: getTodayStr(),
-  class_type: '지출' as ClassType,
+  class: '지출' as ClassType,
   category: '변동지출',
   subcategory: '',
   item: '',
@@ -72,14 +72,14 @@ export default function TransactionsPage() {
   // 현재 데이터에서 카테고리 목록 동적 추출
   const categoryOptions = useMemo(() => {
     const base = transactions
-      .filter(t => filterClass === '전체' || t.class_type === filterClass)
+      .filter(t => filterClass === '전체' || t.class === filterClass)
       .map(t => t.category)
     return ['전체', ...Array.from(new Set(base))]
   }, [transactions, filterClass])
 
   // 클라이언트 필터링
   const filtered = useMemo(() => transactions.filter(t => {
-    if (filterClass !== '전체' && t.class_type !== filterClass) return false
+    if (filterClass !== '전체' && t.class !== filterClass) return false
     if (filterCategory !== '전체' && t.category !== filterCategory) return false
     if (filterUser !== '전체' && t.user_name !== filterUser) return false
     if (filterKeyword) {
@@ -92,13 +92,13 @@ export default function TransactionsPage() {
 
   function handleClassChange(classType: '수입' | '지출') {
     const defaultCat = CATEGORIES[classType][0]
-    setForm(f => ({ ...f, class_type: classType, category: defaultCat, subcategory: '' }))
+    setForm(f => ({ ...f, class: classType, category: defaultCat, subcategory: '' }))
   }
 
   function handleEdit(t: Transaction) {
     setForm({
       date: t.date,
-      class_type: t.class_type,
+      class: t.class,
       category: t.category,
       subcategory: t.subcategory ?? '',
       item: t.item ?? '',
@@ -138,8 +138,8 @@ export default function TransactionsPage() {
     }
   }
 
-  const income = transactions.filter(t => t.class_type === '수입').reduce((s, t) => s + t.amount, 0)
-  const expense = transactions.filter(t => t.class_type === '지출').reduce((s, t) => s + t.amount, 0)
+  const income = transactions.filter(t => t.class === '수입').reduce((s, t) => s + t.amount, 0)
+  const expense = transactions.filter(t => t.class === '지출').reduce((s, t) => s + t.amount, 0)
 
   return (
     <div className="max-w-full">
@@ -176,7 +176,7 @@ export default function TransactionsPage() {
               <div className="flex gap-2">
                 {(['수입','지출'] as const).map(ct => (
                   <button key={ct} type="button" onClick={() => handleClassChange(ct)}
-                    className={`flex-1 py-2 text-sm rounded-lg border ${form.class_type === ct ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}`}>
+                    className={`flex-1 py-2 text-sm rounded-lg border ${form.class === ct ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}`}>
                     {ct}
                   </button>
                 ))}
@@ -187,7 +187,7 @@ export default function TransactionsPage() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">카테고리</label>
               <select value={form.category} onChange={e => setForm(f=>({...f, category: e.target.value, subcategory: ''}))} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
-                {(CATEGORIES[form.class_type as '수입' | '지출'] ?? []).map(c => <option key={c} value={c}>{c}</option>)}
+                {(CATEGORIES[form.class as '수입' | '지출'] ?? []).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
@@ -292,16 +292,16 @@ export default function TransactionsPage() {
                   <tr key={t.id} className="hover:bg-gray-50">
                     <td className="px-3 py-2.5 text-gray-600 text-xs">{formatDate(t.date)}</td>
                     <td className="px-3 py-2.5">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${CLASS_BADGE[t.class_type] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {t.class_type}
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${CLASS_BADGE[t.class] ?? 'bg-gray-100 text-gray-600'}`}>
+                        {t.class}
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-gray-700 text-xs">{t.category || '-'}</td>
                     <td className="px-3 py-2.5 text-gray-600 text-xs">{t.subcategory || '-'}</td>
                     <td className="px-3 py-2.5 text-gray-600 text-xs">{t.item || '-'}</td>
                     <td className="px-3 py-2.5 text-gray-500 text-xs">{t.user_name}</td>
-                    <td className={`px-3 py-2.5 font-medium text-xs ${CLASS_AMOUNT[t.class_type] ?? 'text-gray-600'}`}>
-                      {t.class_type === '수입' ? '+' : t.class_type === '지출' ? '-' : ''}{formatCurrency(t.amount)}
+                    <td className={`px-3 py-2.5 font-medium text-xs ${CLASS_AMOUNT[t.class] ?? 'text-gray-600'}`}>
+                      {t.class === '수입' ? '+' : t.class === '지출' ? '-' : ''}{formatCurrency(t.amount)}
                     </td>
                     {/* 메모: 내용 있으면 truncate + hover 시 전체 내용 표시 */}
                     <td className="px-3 py-2.5 text-xs max-w-36">

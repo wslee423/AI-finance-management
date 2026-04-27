@@ -52,22 +52,18 @@ function str(value: unknown): string | null {
   return s || null
 }
 
-// 엑셀 한글 이름 → DB 영문 user_name
+// 엑셀 user → DB user_name (한글 그대로 저장)
 function toUserName(user: unknown): string {
   const u = String(user ?? '').trim()
-  if (u === '운섭') return 'Owner'
-  if (u === '아름') return 'Spouse'
-  if (u === '희온') return 'Child'
-  return 'Shared'
+  if (u === '운섭' || u === '아름' || u === '희온' || u === '공동') return u
+  return '공동'
 }
 
-// 엑셀 한글 owner → DB 영문 owner
+// 엑셀 owner → DB owner (한글 그대로 저장)
 function toOwner(owner: unknown): string {
   const o = String(owner ?? '').trim()
-  if (o === '운섭') return 'Owner'
-  if (o === '아름') return 'Spouse'
-  if (o === '공동') return 'Shared'
-  return 'Shared'
+  if (o === '운섭' || o === '아름' || o === '공동') return o
+  return '공동'
 }
 
 function parseTags(value: unknown): string[] | null {

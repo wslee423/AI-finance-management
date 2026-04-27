@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx'
 type ImportRow = {
   row: number
   date: string
-  class_type: string
+  class: string
   category: string
   subcategory: string | null
   item: string | null
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabase.from('transactions').insert(
       valid.map(r => ({
         date: r.date,
-        class_type: r.class_type,
+        class: r.class,
         category: r.category,
         subcategory: r.subcategory,
         item: r.item,
@@ -97,29 +97,29 @@ export async function POST(request: Request) {
     const raw = rawRows[i]
     const rowNum = i + 2
 
-    const classVal = String(getField(raw, 'class', '분류', 'class_type') ?? '').trim()
+    const classVal = String(getField(raw, 'class', '분류', 'class') ?? '').trim()
     if (classVal === '이체' || classVal === '') continue
     if (classVal !== '수입' && classVal !== '지출') {
-      result.push({ row: rowNum, date: '', class_type: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, memo: null, error: `분류값 오류: "${classVal}"` })
+      result.push({ row: rowNum, date: '', class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, memo: null, error: `분류값 오류: "${classVal}"` })
       continue
     }
 
     const dateStr = toDateStr(getField(raw, 'date', '날짜'))
     if (!dateStr) {
-      result.push({ row: rowNum, date: '', class_type: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, memo: null, error: '날짜 오류' })
+      result.push({ row: rowNum, date: '', class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, memo: null, error: '날짜 오류' })
       continue
     }
 
     const amount = Math.round(Number(getField(raw, 'amount', '금액') ?? 0))
     if (amount <= 0) {
-      result.push({ row: rowNum, date: dateStr, class_type: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, memo: null, error: '금액 오류 (0 이하)' })
+      result.push({ row: rowNum, date: dateStr, class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, memo: null, error: '금액 오류 (0 이하)' })
       continue
     }
 
     result.push({
       row: rowNum,
       date: dateStr,
-      class_type: classVal,
+      class: classVal,
       category: normalizeCategory(getField(raw, 'type', '카테고리', 'category')),
       subcategory: getField(raw, 'category', '세부카테고리', 'subcategory') ? String(getField(raw, 'category', '세부카테고리', 'subcategory')).trim() : null,
       item: getField(raw, 'subcategory', '항목명', 'item') ? String(getField(raw, 'subcategory', '항목명', 'item')).trim() : null,

@@ -41,7 +41,7 @@ export default function PresetModal({ year, month, onClose, onSuccess }: PresetM
       .filter(p => Number(amounts[p.id]) > 0)
       .map(p => ({
         date: `${year}-${String(month).padStart(2, '0')}-01`,
-        class_type: '지출',
+        class: '지출',
         category: p.category,
         subcategory: p.subcategory,
         item: p.item,

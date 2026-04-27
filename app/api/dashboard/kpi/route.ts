@@ -14,9 +14,9 @@ export async function GET(request: Request) {
   // transactions 조회 (이체 제외)
   let txQuery = supabase
     .from('transactions')
-    .select('class_type, amount')
+    .select('class, amount')
     .is('deleted_at', null)
-    .neq('class_type', '이체')
+    .neq('class', '이체')
 
   if (from) txQuery = txQuery.gte('date', `${from}-01`)
   if (to) {
@@ -39,8 +39,8 @@ export async function GET(request: Request) {
   if (txResult.error) return serverError(txResult.error.message)
   if (divResult.error) return serverError(divResult.error.message)
 
-  const income = txResult.data.filter(t => t.class_type === '수입').reduce((s, t) => s + t.amount, 0)
-  const expense = txResult.data.filter(t => t.class_type === '지출').reduce((s, t) => s + t.amount, 0)
+  const income = txResult.data.filter(t => t.class === '수입').reduce((s, t) => s + t.amount, 0)
+  const expense = txResult.data.filter(t => t.class === '지출').reduce((s, t) => s + t.amount, 0)
   const savingsRate = income > 0 ? Math.round(((income - expense) / income) * 10000) / 100 : 0
   const totalDividend = divResult.data.reduce((s, d) => s + d.krw_amount, 0)
 

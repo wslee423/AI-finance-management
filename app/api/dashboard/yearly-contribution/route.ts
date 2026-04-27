@@ -9,7 +9,7 @@ export async function GET() {
   const supabase = await createClient()
 
   const [txResult, assetResult] = await Promise.all([
-    supabase.from('transactions').select('date, class_type, amount').is('deleted_at', null).neq('class_type', '이체'),
+    supabase.from('transactions').select('date, class, amount').is('deleted_at', null).neq('class', '이체'),
     supabase.from('assets').select('snapshot_date, balance').order('snapshot_date'),
   ])
 
@@ -21,7 +21,7 @@ export async function GET() {
   for (const t of txResult.data) {
     const year = Number(t.date.slice(0, 4))
     const cur = savingsByYear.get(year) ?? { income: 0, expense: 0 }
-    if (t.class_type === '수입') cur.income += t.amount
+    if (t.class === '수입') cur.income += t.amount
     else cur.expense += t.amount
     savingsByYear.set(year, cur)
   }

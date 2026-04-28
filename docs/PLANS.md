@@ -54,7 +54,7 @@
 - [x] 고정지출 preset 불러오기 → 일괄 저장 동작
 - [x] 자산 월별 스냅샷 입력 (직전 월 불러오기 + 저장)
 - [x] 배당금 입력 동작 (환율 자동 조회 포함)
-- [x] 마이그레이션 스크립트 실행 완료 (transactions 3,147건 / assets 819건 / dividend 196건)
+- [x] 마이그레이션 스크립트 실행 완료 (transactions 3,151건 / assets 819건 / dividend 196건)
 - [x] `npm run typecheck && npm run lint` 경고 0건
 - [ ] 월말 자동 백업 스크립트 (Phase 6으로 이월)
 

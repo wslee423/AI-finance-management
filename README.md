@@ -43,7 +43,7 @@
 | Phase 6 | 안정화 | 🔲 |
 
 **현재 데이터:**
-- transactions: 3,147건 (수입/지출/이체)
+- transactions: 3,151건 (수입/지출/이체)
 - assets: 819건 (월별 스냅샷)
 - dividend: 196건 (배당 내역)
 

@@ -14,10 +14,10 @@
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS |
 | DB / Auth | Supabase (PostgreSQL + Auth + RLS) |
-| AI | Anthropic Claude API (`claude-sonnet-4-5`) |
+| AI | OpenAI API (gpt-5.1) |
 | 차트 | Recharts |
 | 배포 | Vercel (Pro 플랜) |
-| 텔레그램 | node-telegram-bot-api |
+| 텔레그램 | Telegram Bot API (Webhook) |
 
 ---
 
@@ -25,9 +25,9 @@
 
 - **Admin** — 수입/지출/자산/배당금 웹 입력 (단건 + 파일 업로드 일괄 입력) ✅
 - **Dashboard** — KPI 카드, 월별 수입/지출, 순자산 성장, 저축률 추이, 배당금 분석 (누적/종목별 시계열) ✅
-- **AI 에이전트** — 자연어로 재정 질의응답 ("지난달 외식비 얼마야?") 🔲 Phase 4
-- **텔레그램 봇** — 모바일에서 AI 에이전트 접근 🔲 Phase 5
-- **월말 자동 백업** — Supabase → 구글시트 자동 export (Vercel Cron) 🔲 Phase 6
+- **AI 에이전트** — 자연어로 재정 질의응답 ("지난달 외식비 얼마야?") ✅
+- **텔레그램 봇** — 모바일에서 AI 에이전트 접근 (Webhook + chat_id 인증) ✅
+- **에러 모니터링** — 운영 안정화 (Sentry 또는 Vercel Log Drains) 🔲 Phase 6
 
 ---
 
@@ -38,9 +38,9 @@
 | Phase 1 | 기반 세팅 (Next.js + Supabase + Auth) | ✅ |
 | Phase 2 | 데이터 관리 Admin + 마이그레이션 | ✅ |
 | Phase 3 | 재정 대시보드 | ✅ |
-| Phase 4 | AI 재정 에이전트 | 🔲 |
-| Phase 5 | 텔레그램 봇 | 🔲 |
-| Phase 6 | 안정화 | 🔲 |
+| Phase 4 | AI 재정 에이전트 | ✅ |
+| Phase 5 | 텔레그램 봇 | ✅ |
+| Phase 6 | 안정화 | 🔄 |
 
 **현재 데이터:**
 - transactions: 3,151건 (수입/지출/이체)
@@ -118,7 +118,7 @@ npx tsx scripts/migrate.ts
 1. **금융 데이터 무결성** — hard delete 금지, soft-delete(`deleted_at`)만 허용
 2. **가족 전용 접근** — Owner·Spouse 두 사람만 (RLS + 이메일 whitelist)
 3. **AI는 생활 비서** — 투자 자문 아님. 데이터 조회·분석에 집중
-4. **Supabase = Source of Truth** — 구글시트는 월말 자동 백업 아카이브
+4. **Supabase = Source of Truth** — 필요 시 구글시트 수동 export 가능
 
 ---
 

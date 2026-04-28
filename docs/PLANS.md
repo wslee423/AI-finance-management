@@ -18,7 +18,7 @@
 | Phase 2 | 데이터 관리 (Admin) | 3주 | ✅ |
 | Phase 3 | 재정 대시보드 | 3주 | ✅ |
 | Phase 4 | AI 재정 에이전트 | 3주 | ✅ |
-| Phase 5 | 텔레그램 봇 | 2주 | 🔲 |
+| Phase 5 | 텔레그램 봇 | 2주 | ✅ |
 | Phase 6 | 안정화 | 상시 | 🔲 |
 
 상태: 🔲 미시작 / 🔄 진행 중 / ✅ 완료
@@ -114,16 +114,17 @@
 ## Phase 5 — 텔레그램 봇
 
 **Phase Gate**
-- [ ] 텔레그램 메시지 → AI 답변 왕복 동작
-- [ ] Owner·Spouse chat_id 인증 동작
-- [ ] Phase 2 백업 스크립트에 텔레그램 알림 추가 완료
+- [x] 텔레그램 메시지 → AI 답변 왕복 동작
+- [x] Owner chat_id 인증 동작 (Spouse는 추후 추가)
+- [ ] 백업 스크립트 텔레그램 알림 → Phase 6 이월
 
 **작업 목록**
-- [ ] Telegram Bot 생성 (BotFather)
-- [ ] Webhook 엔드포인트 (`/api/telegram`)
-- [ ] 허용 chat_id 인증
-- [ ] 웹 AI Agent와 공통 로직 공유 (`lib/openai/tools.ts`)
-- [ ] Phase 2 백업 스크립트 텔레그램 알림 연결
+- [x] Telegram Bot 생성 (BotFather)
+- [x] Webhook 엔드포인트 (`/api/telegram`)
+- [x] 허용 chat_id 인증
+- [x] 웹 AI Agent와 공통 로직 공유 (`lib/openai/tools.ts`)
+- [x] Supabase Service Role 적용 (RLS 우회)
+- [ ] 백업 스크립트 텔레그램 알림 연결 → Phase 6 이월
 
 ---
 

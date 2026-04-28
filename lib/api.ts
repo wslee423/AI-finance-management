@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server'
 // 인증된 사용자 반환 — Route Handler에서 반복되는 인증 코드 추출
 export async function getAuthUser() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error) return null
   return user
 }
 

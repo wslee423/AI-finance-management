@@ -63,7 +63,12 @@ export async function POST(request: Request) {
 
   // confirm 모드: 미리보기에서 확인한 데이터 바로 저장
   if (mode === 'confirm' && confirmedJson) {
-    const rows = JSON.parse(confirmedJson) as ImportRow[]
+    let rows: ImportRow[]
+    try {
+      rows = JSON.parse(confirmedJson) as ImportRow[]
+    } catch {
+      return NextResponse.json({ error: '데이터 형식이 올바르지 않습니다' }, { status: 400 })
+    }
     const valid = rows.filter(r => !r.error)
     if (valid.length === 0) return NextResponse.json({ error: '저장할 유효한 데이터가 없습니다' }, { status: 400 })
 

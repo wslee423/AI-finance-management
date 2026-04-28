@@ -98,16 +98,17 @@ export const TOOLS: ChatCompletionTool[] = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+// YYYY-MM 형식의 월을 해당 월의 마지막 날짜(YYYY-MM-DD)로 변환
+function toMonthEnd(ym: string): string {
+  const [y, m] = ym.split('-').map(Number)
+  return `${ym}-${new Date(y, m, 0).getDate()}`
+}
+
 function toDateRange(from: string, to?: string): { fromDate: string; toDate: string } {
   const fromDate = from.length === 7 ? `${from}-01` : from
   let toDate: string
   if (to) {
-    if (to.length === 7) {
-      const [y, m] = to.split('-').map(Number)
-      toDate = `${to}-${new Date(y, m, 0).getDate()}`
-    } else {
-      toDate = to
-    }
+    toDate = to.length === 7 ? toMonthEnd(to) : to
   } else {
     toDate = new Date().toISOString().slice(0, 10)
   }
@@ -148,8 +149,7 @@ async function runTxQuery(supabase: AnySupabaseClient, params: TxArgs & { fromDa
     ? 'date, class, type, category, subcategory, item, user_name, amount, memo'
     : 'amount, class'
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let q: any = supabase.from('transactions')
+  let q = supabase.from('transactions')
     .select(columns)
     .is('deleted_at', null)
     .gte('date', fromDate)
@@ -170,7 +170,8 @@ async function runTxQuery(supabase: AnySupabaseClient, params: TxArgs & { fromDa
 
   const { data, error } = await q
   if (error) throw new Error(error.message)
-  return (data ?? []) as { amount: number; class: string }[]
+  // columns이 런타임 변수라 Supabase 타입 추론 불가 — unknown 경유 캐스트
+  return (data ?? []) as unknown as { amount: number; class: string }[]
 }
 
 async function queryTransactions(args: Record<string, unknown>, serviceRole = false) {
@@ -203,8 +204,7 @@ async function queryAssets(args: Record<string, unknown>, serviceRole = false) {
   const { snapshot_date, owner, asset_type, history } = args as AssetArgs
 
   if (history) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let q: any = supabase.from('assets').select('snapshot_date, asset_type, balance').order('snapshot_date')
+    let q = supabase.from('assets').select('snapshot_date, asset_type, balance').order('snapshot_date')
     if (owner && owner !== 'all') q = q.eq('owner', owner)
     if (asset_type) q = q.eq('asset_type', asset_type)
     const { data, error } = await q
@@ -239,8 +239,7 @@ async function queryAssets(args: Record<string, unknown>, serviceRole = false) {
 
   if (!targetDate) return { snapshotDate: null, netWorth: 0, assets: [] }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let q: any = supabase.from('assets')
+  let q = supabase.from('assets')
     .select('asset_type, balance')
     .eq('snapshot_date', targetDate)
   if (owner && owner !== 'all') q = q.eq('owner', owner)
@@ -265,19 +264,13 @@ async function queryDividend(args: Record<string, unknown>, serviceRole = false)
   const supabase = serviceRole ? createServiceClient() : await createClient()
   const { from, to, ticker, aggregate = 'total' } = args as DivArgs
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let q: any = supabase.from('dividend')
+  let q = supabase.from('dividend')
     .select('date, ticker_name, ticker_symbol, krw_amount')
     .order('date')
 
   if (from) q = q.gte('date', from.length === 7 ? `${from}-01` : from)
   if (to) {
-    if (to.length === 7) {
-      const [y, m] = to.split('-').map(Number)
-      q = q.lte('date', `${to}-${new Date(y, m, 0).getDate()}`)
-    } else {
-      q = q.lte('date', to)
-    }
+    q = q.lte('date', to.length === 7 ? toMonthEnd(to) : to)
   }
   if (ticker) q = q.or(`ticker_symbol.ilike.%${ticker}%,ticker_name.ilike.%${ticker}%`)
 

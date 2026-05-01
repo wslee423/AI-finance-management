@@ -25,7 +25,8 @@ export interface Asset {
   id: string
   snapshot_date: string
   asset_type: AssetType
-  institution: string
+  assettype: string | null
+  institution: string | null
   owner: AssetOwner
   balance: number
   contribution_rate: number | null

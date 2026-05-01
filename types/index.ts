@@ -29,7 +29,6 @@ export interface Asset {
   institution: string | null
   owner: AssetOwner
   balance: number
-  contribution_rate: number | null
   memo: string | null
   created_at: string
 }

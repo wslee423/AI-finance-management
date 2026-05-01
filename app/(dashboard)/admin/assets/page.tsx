@@ -14,7 +14,6 @@ interface AssetRow {
   institution: string
   owner: AssetOwner
   balance: string
-  contribution_rate: string
   memo: string
 }
 
@@ -41,7 +40,6 @@ export default function AssetsPage() {
         institution: a.institution ?? '',
         owner: a.owner,
         balance: String(a.balance),
-        contribution_rate: a.contribution_rate != null ? String(a.contribution_rate) : '',
         memo: a.memo ?? '',
       })))
     } catch {
@@ -70,7 +68,6 @@ export default function AssetsPage() {
         institution: a.institution ?? '',
         owner: a.owner,
         balance: String(a.balance),
-        contribution_rate: a.contribution_rate != null ? String(a.contribution_rate) : '',
         memo: a.memo ?? '',
       })))
     } catch {
@@ -79,7 +76,7 @@ export default function AssetsPage() {
   }
 
   function addRow() {
-    setRows(r => [...r, { asset_type: '통장', assettype: '', institution: '', owner: '운섭', balance: '0', contribution_rate: '', memo: '' }])
+    setRows(r => [...r, { asset_type: '통장', assettype: '', institution: '', owner: '운섭', balance: '0', memo: '' }])
   }
 
   function removeRow(i: number) {
@@ -99,7 +96,6 @@ export default function AssetsPage() {
           institution: r.institution.trim(),
           owner: r.owner,
           balance: Number(r.balance) || 0,
-          contribution_rate: r.contribution_rate ? Number(r.contribution_rate) : null,
           memo: r.memo || null,
         }))
 
@@ -167,7 +163,7 @@ export default function AssetsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                {['자산유형','자산설명','기관명','소유자','잔액 (원)','기여율','메모',''].map(h => (
+                {['자산유형','자산설명','기관명','소유자','잔액 (원)','메모',''].map(h => (
                   <th key={h} className="px-3 py-3 text-left text-xs font-medium text-gray-500">{h}</th>
                 ))}
               </tr>
@@ -198,10 +194,6 @@ export default function AssetsPage() {
                   <td className="px-3 py-2">
                     <input type="number" value={row.balance} onChange={e => setRows(r => r.map((x,j)=>j===i?{...x,balance:e.target.value}:x))}
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded text-right" />
-                  </td>
-                  <td className="px-3 py-2">
-                    <input type="number" value={row.contribution_rate} onChange={e => setRows(r => r.map((x,j)=>j===i?{...x,contribution_rate:e.target.value}:x))}
-                      placeholder="0~1" step="0.0001" className="w-20 px-2 py-1 text-sm border border-gray-300 rounded" />
                   </td>
                   <td className="px-3 py-2">
                     <input value={row.memo} onChange={e => setRows(r => r.map((x,j)=>j===i?{...x,memo:e.target.value}:x))}

@@ -12,7 +12,7 @@ export interface Transaction {
   subcategory: string | null
   item: string | null
   payment: string | null
-  user_name: UserName
+  user_name: UserName | null
   memo: string | null
   amount: number
   tags: string | null

@@ -18,11 +18,13 @@ function normalizeTags(tags: string | string[] | undefined | null): string[] {
 const makeEmptyForm = () => ({
   date: getTodayStr(),
   class: '지출' as ClassType,
-  category: '변동지출',
+  type: '변동지출',
+  category: '',
   subcategory: '',
   item: '',
   user_name: '공동' as UserName,
   amount: '',
+  payment: '',
   memo: '',
   tags: '',
 })
@@ -86,7 +88,6 @@ export default function TransactionsPage() {
   // 유형 변경 시 카테고리 리셋
   useEffect(() => { setFilterCategory('전체') }, [filterType])
 
-  // 현재 데이터에서 유형 목록 동적 추출
   const typeOptions = useMemo(() => {
     const base = transactions
       .filter(t => filterClass === '전체' || t.class === filterClass)
@@ -94,7 +95,6 @@ export default function TransactionsPage() {
     return ['전체', ...Array.from(new Set(base)).filter(Boolean)]
   }, [transactions, filterClass])
 
-  // 현재 데이터에서 카테고리 목록 동적 추출
   const categoryOptions = useMemo(() => {
     const base = transactions
       .filter(t => filterClass === '전체' || t.class === filterClass)
@@ -103,7 +103,6 @@ export default function TransactionsPage() {
     return ['전체', ...Array.from(new Set(base)).filter(Boolean)]
   }, [transactions, filterClass, filterType])
 
-  // 클라이언트 필터링
   const filtered = useMemo(() => transactions.filter(t => {
     if (filterClass !== '전체' && t.class !== filterClass) return false
     if (filterType !== '전체' && t.type !== filterType) return false
@@ -118,8 +117,8 @@ export default function TransactionsPage() {
   }), [transactions, filterClass, filterType, filterCategory, filterUser, filterKeyword])
 
   function handleClassChange(classType: '수입' | '지출') {
-    const defaultCat = CATEGORIES[classType][0]
-    setForm(f => ({ ...f, class: classType, category: defaultCat, subcategory: '' }))
+    const defaultType = CATEGORIES[classType][0]
+    setForm(f => ({ ...f, class: classType, type: defaultType, category: '' }))
   }
 
   function handleEdit(t: Transaction) {
@@ -127,11 +126,13 @@ export default function TransactionsPage() {
     setForm({
       date: t.date,
       class: t.class,
-      category: t.category,
+      type: t.type || CATEGORIES[t.class as '수입' | '지출']?.[0] || '',
+      category: t.category || '',
       subcategory: t.subcategory ?? '',
       item: t.item ?? '',
       user_name: t.user_name ?? '공동',
       amount: String(t.amount),
+      payment: t.payment ?? '',
       memo: t.memo ?? '',
       tags: tagsStr,
     })
@@ -142,10 +143,15 @@ export default function TransactionsPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const payload = {
-      ...form,
-      amount: Number(form.amount),
+      date: form.date,
+      class: form.class,
+      type: form.type,
+      category: form.category || null,
       subcategory: form.subcategory || null,
       item: form.item || null,
+      user_name: form.user_name,
+      amount: Number(form.amount),
+      payment: form.payment || null,
       memo: form.memo || null,
       tags: form.tags || null,
     }
@@ -202,6 +208,7 @@ export default function TransactionsPage() {
       {/* 입력 폼 */}
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-5 mb-4 space-y-4">
+          {/* 날짜 + 분류 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">날짜</label>
@@ -219,36 +226,50 @@ export default function TransactionsPage() {
               </div>
             </div>
           </div>
+
+          {/* 유형 + 카테고리 + 세부카테고리 */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">카테고리 <span className="text-red-500">*</span></label>
-              <select value={form.category} onChange={e => setForm(f=>({...f, category: e.target.value, subcategory: ''}))} required className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+              <label className="block text-xs font-medium text-gray-600 mb-1">유형 <span className="text-red-500">*</span></label>
+              <select value={form.type} onChange={e => setForm(f=>({...f, type: e.target.value, category: ''}))} required className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
                 {(CATEGORIES[form.class as '수입' | '지출'] ?? []).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">세부카테고리</label>
-              <select value={form.subcategory} onChange={e => setForm(f=>({...f, subcategory: e.target.value}))} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+              <label className="block text-xs font-medium text-gray-600 mb-1">카테고리</label>
+              <select value={form.category} onChange={e => setForm(f=>({...f, category: e.target.value}))} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
                 <option value="">선택 안함</option>
-                {(SUBCATEGORIES[form.category] ?? []).map(s => <option key={s} value={s}>{s}</option>)}
+                {(SUBCATEGORIES[form.type] ?? []).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">세부카테고리</label>
+              <input type="text" value={form.subcategory} onChange={e => setForm(f=>({...f, subcategory: e.target.value}))} placeholder="선택 입력" className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
+            </div>
+          </div>
+
+          {/* 항목명 + 결제수단 + 금액 */}
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">항목명</label>
               <input type="text" value={form.item} onChange={e => setForm(f=>({...f, item: e.target.value}))} placeholder="선택 입력" className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">결제수단</label>
+              <input type="text" value={form.payment} onChange={e => setForm(f=>({...f, payment: e.target.value}))} placeholder="선택 입력" className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
+            </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">금액 (원)</label>
               <input type="number" value={form.amount} onChange={e => setForm(f=>({...f, amount: e.target.value}))} required min="0" placeholder="0" className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
             </div>
+          </div>
+
+          {/* 메모 + 사용자 */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">메모</label>
               <input type="text" value={form.memo} onChange={e => setForm(f=>({...f, memo: e.target.value}))} placeholder="선택 입력" className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">사용자</label>
               <div className="flex gap-1 flex-wrap">
@@ -260,11 +281,14 @@ export default function TransactionsPage() {
                 ))}
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">태그</label>
-              <TagInput value={form.tags} onChange={v => setForm(f => ({ ...f, tags: v }))} existingTags={allTags} />
-            </div>
           </div>
+
+          {/* 태그 */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">태그</label>
+            <TagInput value={form.tags} onChange={v => setForm(f => ({ ...f, tags: v }))} existingTags={allTags} />
+          </div>
+
           <div className="flex gap-2 justify-end">
             <button type="button" onClick={() => { setShowForm(false); setEditId(null); setForm(makeEmptyForm()) }} className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg">취소</button>
             <button type="submit" className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">{editId ? '수정' : '저장'}</button>
@@ -327,7 +351,7 @@ export default function TransactionsPage() {
             <table className="w-full text-sm whitespace-nowrap">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {['날짜','분류','유형','카테고리','세부카테고리','항목명','사용자','금액','메모','태그',''].map(h => (
+                  {['날짜','분류','유형','카테고리','세부카테고리','항목명','사용자','금액','결제수단','메모','태그',''].map(h => (
                     <th key={h} className="px-3 py-3 text-left text-xs font-medium text-gray-500">{h}</th>
                   ))}
                 </tr>
@@ -349,13 +373,10 @@ export default function TransactionsPage() {
                     <td className={`px-3 py-2.5 font-medium text-xs ${CLASS_AMOUNT[t.class] ?? 'text-gray-600'}`}>
                       {t.class === '수입' ? '+' : t.class === '지출' ? '-' : ''}{formatCurrency(t.amount)}
                     </td>
-                    {/* 메모: 내용 있으면 truncate + hover 시 전체 내용 표시 */}
+                    <td className="px-3 py-2.5 text-gray-500 text-xs">{t.payment || '-'}</td>
                     <td className="px-3 py-2.5 text-xs max-w-36">
                       {t.memo ? (
-                        <span
-                          title={t.memo}
-                          className="block truncate text-gray-500 cursor-help border-b border-dotted border-gray-300"
-                        >
+                        <span title={t.memo} className="block truncate text-gray-500 cursor-help border-b border-dotted border-gray-300">
                           {t.memo}
                         </span>
                       ) : (

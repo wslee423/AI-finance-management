@@ -168,7 +168,7 @@ export default function ImportModal({ onClose, onSuccess }: ImportModalProps) {
               <table className="w-full text-xs">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
-                    {['행', '날짜', '분류', '카테고리', '세부', '사용자', '금액', '메모'].map(h => (
+                    {['행', '날짜', '분류', '카테고리', '세부', '항목명', '사용자', '금액', '메모'].map(h => (
                       <th key={h} className="px-3 py-2 text-left font-medium text-gray-500 border-b border-gray-200">{h}</th>
                     ))}
                   </tr>
@@ -191,6 +191,7 @@ export default function ImportModal({ onClose, onSuccess }: ImportModalProps) {
                         </td>
                         <td className="px-3 py-2 text-gray-700">{r.category}</td>
                         <td className="px-3 py-2 text-gray-500">{r.subcategory ?? '-'}</td>
+                        <td className="px-3 py-2 text-gray-500">{r.item ?? '-'}</td>
                         <td className="px-3 py-2 text-gray-500">{r.user_name ?? '-'}</td>
                         <td className="px-3 py-2 text-right font-medium text-gray-800">{r.amount > 0 ? formatCurrency(r.amount) : '-'}</td>
                         <td className="px-3 py-2 text-gray-400 max-w-24 truncate">{r.memo ?? '-'}</td>

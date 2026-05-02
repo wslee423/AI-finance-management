@@ -7,7 +7,8 @@ interface ImportRow {
   row: number
   date: string
   class: string
-  category: string
+  type: string
+  category: string | null
   subcategory: string | null
   item: string | null
   user_name: string | null
@@ -90,7 +91,7 @@ export default function ImportModal({ onClose, onSuccess }: ImportModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl max-h-[85vh] flex flex-col">
 
         {/* 헤더 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
@@ -115,20 +116,21 @@ export default function ImportModal({ onClose, onSuccess }: ImportModalProps) {
               <p className="text-sm font-medium text-gray-700">파일을 드래그하거나 클릭해서 선택</p>
               <p className="text-xs text-gray-400">.xlsx / .xls / .csv 지원</p>
               {uploading && <p className="text-xs text-blue-600 mt-2">파싱 중...</p>}
-            {errorMsg && <p className="text-xs text-red-600 mt-2">{errorMsg}</p>}
+              {errorMsg && <p className="text-xs text-red-600 mt-2">{errorMsg}</p>}
             </div>
             <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) processFile(f) }} />
 
             {/* 지원 컬럼 안내 */}
             <div className="w-full max-w-md bg-gray-50 rounded-lg p-4 text-xs text-gray-600">
-              <p className="font-medium mb-2 text-gray-700">지원하는 컬럼명</p>
+              <p className="font-medium mb-2 text-gray-700">지원하는 컬럼명 (DB 컬럼명과 동일, 한국어 별칭 지원)</p>
               <div className="grid grid-cols-2 gap-1">
                 {[
                   ['날짜', 'date / 날짜'],
                   ['분류', 'class / 분류 (수입/지출)'],
-                  ['카테고리', 'type / 카테고리'],
-                  ['세부카테고리', 'category / 세부카테고리'],
-                  ['항목명', 'subcategory / 항목명'],
+                  ['유형', 'type / 유형 / 카테고리'],
+                  ['카테고리', 'category / 세부카테고리'],
+                  ['세부카테고리', 'subcategory / 항목명'],
+                  ['항목명', 'item'],
                   ['사용자', 'user / 사용자'],
                   ['금액', 'amount / 금액'],
                   ['결제수단', 'payment / 결제수단'],
@@ -172,8 +174,8 @@ export default function ImportModal({ onClose, onSuccess }: ImportModalProps) {
               <table className="w-full text-xs">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
-                    {['행', '날짜', '분류', '카테고리', '세부', '항목명', '사용자', '금액', '결제수단', '메모', '태그'].map(h => (
-                      <th key={h} className="px-3 py-2 text-left font-medium text-gray-500 border-b border-gray-200">{h}</th>
+                    {['행', '날짜', '분류', '유형', '카테고리', '세부카테고리', '항목명', '사용자', '금액', '결제수단', '메모', '태그'].map(h => (
+                      <th key={h} className="px-3 py-2 text-left font-medium text-gray-500 border-b border-gray-200 whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -183,7 +185,7 @@ export default function ImportModal({ onClose, onSuccess }: ImportModalProps) {
                     .map(r => (
                       <tr key={r.row} className={r.error ? 'bg-red-50' : 'hover:bg-gray-50'}>
                         <td className="px-3 py-2 text-gray-400">{r.row}</td>
-                        <td className="px-3 py-2 text-gray-700">{r.date}</td>
+                        <td className="px-3 py-2 text-gray-700 whitespace-nowrap">{r.date}</td>
                         <td className="px-3 py-2">
                           {r.error ? (
                             <span className="text-red-600 text-xs">{r.error}</span>
@@ -193,19 +195,24 @@ export default function ImportModal({ onClose, onSuccess }: ImportModalProps) {
                             </span>
                           )}
                         </td>
-                        <td className="px-3 py-2 text-gray-700">{r.category}</td>
+                        <td className="px-3 py-2 text-gray-700">{r.type || '-'}</td>
+                        <td className="px-3 py-2 text-gray-700">{r.category ?? '-'}</td>
                         <td className="px-3 py-2 text-gray-500">{r.subcategory ?? '-'}</td>
                         <td className="px-3 py-2 text-gray-500">{r.item ?? '-'}</td>
                         <td className="px-3 py-2 text-gray-500">{r.user_name ?? '-'}</td>
-                        <td className="px-3 py-2 text-right font-medium text-gray-800">{r.amount > 0 ? formatCurrency(r.amount) : '-'}</td>
-                        <td className="px-3 py-2 text-gray-500 text-xs">{r.payment ?? '-'}</td>
-                        <td className="px-3 py-2 text-gray-400 max-w-24 truncate text-xs">{r.memo ?? '-'}</td>
-                        <td className="px-3 py-2 text-gray-500 text-xs">{r.tags ?? '-'}</td>
+                        <td className="px-3 py-2 text-right font-medium text-gray-800 whitespace-nowrap">{r.amount > 0 ? formatCurrency(r.amount) : '-'}</td>
+                        <td className="px-3 py-2 text-gray-500">{r.payment ?? '-'}</td>
+                        <td className="px-3 py-2 text-gray-400 max-w-24 truncate">{r.memo ?? '-'}</td>
+                        <td className="px-3 py-2 text-gray-500">{r.tags ?? '-'}</td>
                       </tr>
                     ))}
                 </tbody>
               </table>
             </div>
+
+            {errorMsg && (
+              <div className="px-5 py-2 text-xs text-red-600 border-t border-gray-100">{errorMsg}</div>
+            )}
 
             {/* 저장 버튼 */}
             <div className="flex gap-3 px-5 py-4 border-t border-gray-200">

@@ -6,7 +6,8 @@ type ImportRow = {
   row: number
   date: string
   class: string
-  category: string
+  type: string
+  category: string | null
   subcategory: string | null
   item: string | null
   user_name: string | null
@@ -26,12 +27,11 @@ function toDateStr(value: unknown): string | null {
     return `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`
   }
   const str = String(value).trim()
-  // YYYY-MM-DD 또는 YYYY.MM.DD 처리
   return str.replace(/\./g, '-').split('T')[0]
 }
 
-function normalizeCategory(type: unknown): string {
-  const t = String(type ?? '').trim()
+function normalizeType(value: unknown): string {
+  const t = String(value ?? '').trim()
   if (t === '부수입') return '기타수입'
   return t
 }
@@ -41,12 +41,21 @@ function normalizeUser(user: unknown): string | null {
   return VALID_USERS.includes(u) ? u : null
 }
 
-// 지원 컬럼명 (기존 구글시트 형식 + 간편 형식 모두)
 function getField(row: Record<string, unknown>, ...keys: string[]): unknown {
   for (const key of keys) {
     if (row[key] !== undefined && row[key] !== null && row[key] !== '') return row[key]
   }
   return null
+}
+
+function toStr(value: unknown): string | null {
+  if (value === null || value === undefined) return null
+  const s = String(value).trim()
+  return s || null
+}
+
+function emptyRow(rowNum: number, classVal: string, dateStr: string, error: string): ImportRow {
+  return { row: rowNum, date: dateStr, class: classVal, type: '', category: null, subcategory: null, item: null, user_name: null, amount: 0, payment: null, memo: null, tags: null, error }
 }
 
 export async function POST(request: Request) {
@@ -56,14 +65,14 @@ export async function POST(request: Request) {
 
   const formData = await request.formData()
   const file = formData.get('file') as File | null
-  const mode = formData.get('mode') as string // 'preview' | 'confirm'
+  const mode = formData.get('mode') as string
   const confirmedJson = formData.get('rows') as string | null
 
   if (!file && mode !== 'confirm') {
     return NextResponse.json({ error: '파일이 필요합니다' }, { status: 400 })
   }
 
-  // confirm 모드: 미리보기에서 확인한 데이터 바로 저장
+  // confirm 모드: 미리보기에서 확인한 데이터 저장
   if (mode === 'confirm' && confirmedJson) {
     let rows: ImportRow[]
     try {
@@ -78,9 +87,10 @@ export async function POST(request: Request) {
       valid.map(r => ({
         date: r.date,
         class: r.class,
-        type: r.category,
-        category: r.subcategory,
-        subcategory: r.item,
+        type: r.type,
+        category: r.category,
+        subcategory: r.subcategory,
+        item: r.item,
         user_name: r.user_name,
         amount: r.amount,
         payment: r.payment,
@@ -106,22 +116,22 @@ export async function POST(request: Request) {
     const raw = rawRows[i]
     const rowNum = i + 2
 
-    const classVal = String(getField(raw, 'class', '분류', 'class') ?? '').trim()
+    const classVal = String(getField(raw, 'class', '분류') ?? '').trim()
     if (classVal === '이체' || classVal === '') continue
     if (classVal !== '수입' && classVal !== '지출') {
-      result.push({ row: rowNum, date: '', class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, payment: null, memo: null, tags: null, error: `분류값 오류: "${classVal}"` })
+      result.push(emptyRow(rowNum, classVal, '', `분류값 오류: "${classVal}"`))
       continue
     }
 
     const dateStr = toDateStr(getField(raw, 'date', '날짜'))
     if (!dateStr) {
-      result.push({ row: rowNum, date: '', class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, payment: null, memo: null, tags: null, error: '날짜 오류' })
+      result.push(emptyRow(rowNum, classVal, '', '날짜 오류'))
       continue
     }
 
     const amount = Math.round(Number(getField(raw, 'amount', '금액') ?? 0))
     if (amount <= 0) {
-      result.push({ row: rowNum, date: dateStr, class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, payment: null, memo: null, tags: null, error: '금액 오류 (0 이하)' })
+      result.push(emptyRow(rowNum, classVal, dateStr, '금액 오류 (0 이하)'))
       continue
     }
 
@@ -129,14 +139,16 @@ export async function POST(request: Request) {
       row: rowNum,
       date: dateStr,
       class: classVal,
-      category: normalizeCategory(getField(raw, 'type', '카테고리', 'category')),
-      subcategory: getField(raw, 'category', '세부카테고리', 'subcategory') ? String(getField(raw, 'category', '세부카테고리', 'subcategory')).trim() : null,
-      item: getField(raw, 'subcategory', '항목명', 'item') ? String(getField(raw, 'subcategory', '항목명', 'item')).trim() : null,
+      // 각 필드는 DB 컬럼명과 1:1 매핑 (Excel 영문 컬럼명 우선, 한국어 별칭 지원)
+      type: normalizeType(getField(raw, 'type', '유형', '카테고리')),
+      category: toStr(getField(raw, 'category', '세부카테고리')),
+      subcategory: toStr(getField(raw, 'subcategory', '항목명')),
+      item: toStr(getField(raw, 'item')),
       user_name: normalizeUser(getField(raw, 'user', '사용자', 'user_name')),
       amount,
-      payment: getField(raw, 'payment', '결제수단') ? String(getField(raw, 'payment', '결제수단')).trim() : null,
-      memo: getField(raw, 'memo', '메모') ? String(getField(raw, 'memo', '메모')).trim() : null,
-      tags: getField(raw, 'tags', '태그') ? String(getField(raw, 'tags', '태그')).trim() : null,
+      payment: toStr(getField(raw, 'payment', '결제수단')),
+      memo: toStr(getField(raw, 'memo', '메모')),
+      tags: toStr(getField(raw, 'tags', '태그')),
     })
   }
 

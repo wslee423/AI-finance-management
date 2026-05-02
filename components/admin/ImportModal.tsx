@@ -12,7 +12,9 @@ interface ImportRow {
   item: string | null
   user_name: string | null
   amount: number
+  payment: string | null
   memo: string | null
+  tags: string | null
   error?: string
 }
 
@@ -129,7 +131,9 @@ export default function ImportModal({ onClose, onSuccess }: ImportModalProps) {
                   ['항목명', 'subcategory / 항목명'],
                   ['사용자', 'user / 사용자'],
                   ['금액', 'amount / 금액'],
+                  ['결제수단', 'payment / 결제수단'],
                   ['메모', 'memo / 메모'],
+                  ['태그', 'tags / 태그'],
                 ].map(([label, cols]) => (
                   <div key={label}>
                     <span className="text-gray-500">{label}: </span>
@@ -168,7 +172,7 @@ export default function ImportModal({ onClose, onSuccess }: ImportModalProps) {
               <table className="w-full text-xs">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
-                    {['행', '날짜', '분류', '카테고리', '세부', '항목명', '사용자', '금액', '메모'].map(h => (
+                    {['행', '날짜', '분류', '카테고리', '세부', '항목명', '사용자', '금액', '결제수단', '메모', '태그'].map(h => (
                       <th key={h} className="px-3 py-2 text-left font-medium text-gray-500 border-b border-gray-200">{h}</th>
                     ))}
                   </tr>
@@ -194,7 +198,9 @@ export default function ImportModal({ onClose, onSuccess }: ImportModalProps) {
                         <td className="px-3 py-2 text-gray-500">{r.item ?? '-'}</td>
                         <td className="px-3 py-2 text-gray-500">{r.user_name ?? '-'}</td>
                         <td className="px-3 py-2 text-right font-medium text-gray-800">{r.amount > 0 ? formatCurrency(r.amount) : '-'}</td>
-                        <td className="px-3 py-2 text-gray-400 max-w-24 truncate">{r.memo ?? '-'}</td>
+                        <td className="px-3 py-2 text-gray-500 text-xs">{r.payment ?? '-'}</td>
+                        <td className="px-3 py-2 text-gray-400 max-w-24 truncate text-xs">{r.memo ?? '-'}</td>
+                        <td className="px-3 py-2 text-gray-500 text-xs">{r.tags ?? '-'}</td>
                       </tr>
                     ))}
                 </tbody>

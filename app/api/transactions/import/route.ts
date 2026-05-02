@@ -11,7 +11,9 @@ type ImportRow = {
   item: string | null
   user_name: string | null
   amount: number
+  payment: string | null
   memo: string | null
+  tags: string | null
   error?: string
 }
 
@@ -81,7 +83,9 @@ export async function POST(request: Request) {
         subcategory: r.item,
         user_name: r.user_name,
         amount: r.amount,
+        payment: r.payment,
         memo: r.memo,
+        tags: r.tags,
       }))
     ).select()
 
@@ -105,19 +109,19 @@ export async function POST(request: Request) {
     const classVal = String(getField(raw, 'class', '분류', 'class') ?? '').trim()
     if (classVal === '이체' || classVal === '') continue
     if (classVal !== '수입' && classVal !== '지출') {
-      result.push({ row: rowNum, date: '', class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, memo: null, error: `분류값 오류: "${classVal}"` })
+      result.push({ row: rowNum, date: '', class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, payment: null, memo: null, tags: null, error: `분류값 오류: "${classVal}"` })
       continue
     }
 
     const dateStr = toDateStr(getField(raw, 'date', '날짜'))
     if (!dateStr) {
-      result.push({ row: rowNum, date: '', class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, memo: null, error: '날짜 오류' })
+      result.push({ row: rowNum, date: '', class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, payment: null, memo: null, tags: null, error: '날짜 오류' })
       continue
     }
 
     const amount = Math.round(Number(getField(raw, 'amount', '금액') ?? 0))
     if (amount <= 0) {
-      result.push({ row: rowNum, date: dateStr, class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, memo: null, error: '금액 오류 (0 이하)' })
+      result.push({ row: rowNum, date: dateStr, class: classVal, category: '', subcategory: null, item: null, user_name: '', amount: 0, payment: null, memo: null, tags: null, error: '금액 오류 (0 이하)' })
       continue
     }
 
@@ -130,7 +134,9 @@ export async function POST(request: Request) {
       item: getField(raw, 'subcategory', '항목명', 'item') ? String(getField(raw, 'subcategory', '항목명', 'item')).trim() : null,
       user_name: normalizeUser(getField(raw, 'user', '사용자', 'user_name')),
       amount,
+      payment: getField(raw, 'payment', '결제수단') ? String(getField(raw, 'payment', '결제수단')).trim() : null,
       memo: getField(raw, 'memo', '메모') ? String(getField(raw, 'memo', '메모')).trim() : null,
+      tags: getField(raw, 'tags', '태그') ? String(getField(raw, 'tags', '태그')).trim() : null,
     })
   }
 

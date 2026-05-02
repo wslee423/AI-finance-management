@@ -116,7 +116,7 @@ export default function TransactionsPage() {
       category: t.category,
       subcategory: t.subcategory ?? '',
       item: t.item ?? '',
-      user_name: t.user_name,
+      user_name: t.user_name ?? '공동',
       amount: String(t.amount),
       memo: t.memo ?? '',
       tags: tagsStr,

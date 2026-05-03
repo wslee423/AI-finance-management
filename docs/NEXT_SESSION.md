@@ -1,4 +1,4 @@
-# NEXT_SESSION.md — 핸드오프 (2026-04-28)
+# NEXT_SESSION.md — 핸드오프 (2026-05-02)
 
 > 이전 세션에서 완료한 내용 및 다음 세션 시작점.
 
@@ -17,7 +17,7 @@
 
 ---
 
-## Phase 6 진행 현황 (2026-04-28 기준)
+## Phase 6 진행 현황 (2026-05-02 기준)
 
 ### ✅ 완료
 - **Sentry 에러 모니터링** — `@sentry/nextjs` 설치, DSN 연동, Vercel 배포 완료
@@ -26,12 +26,22 @@
   - `sentry.server.config.ts`: `beforeSend`로 cookies, authorization 헤더, request body 제거
   - `/api/chat`: 에러 시 errorId 포함 SSE 응답
   - `/api/telegram`: 에러 시 사용자에게 errorId 포함 메시지 전송
-- **코드 품질 개선**
-  - `lib/openai/tools.ts`: `any` 4개 제거, `toMonthEnd()` 헬퍼 추출
-  - `lib/api.ts`: `getAuthUser()` auth 에러 핸들링
-  - `app/api/transactions/import/route.ts`: `JSON.parse` try-catch 추가
+- **파일 일괄입력 필드 정확도 개선** (2026-05-02)
+  - ImportRow 타입을 DB 컬럼명 1:1 매핑으로 재정의 (`type, category, subcategory, item`)
+  - getField 키 충돌 해결 — 필드별 고유 키 세트 사용
+  - `item` 필드 DB 저장 누락 수정
+- **코드 품질 시니어 리뷰** (2026-05-02)
+  - `app/api/dividend/[id]/route.ts`: hard delete → soft delete (`deleted_at`) 전환
+  - `app/api/dividend/route.ts`: GET 쿼리에 `.is('deleted_at', null)` 추가
+  - `app/api/tags/route.ts`: soft-delete 트랜잭션 태그 제외
+  - `app/api/dividend/exchange-rate/route.ts`: `getAuthUser()` 헬퍼 통일
+  - `components/admin/PresetModal.tsx`: insert payload type 필드 누락 수정
+  - `types/index.ts`: `Transaction.type`, `Transaction.category` nullable 처리
+  - `app/(dashboard)/admin/transactions/page.tsx`: type 필터 드롭다운 + 테이블 열 추가
+  - `supabase/add_dividend_soft_delete.sql`: 마이그레이션 파일 생성
 
 ### 🔲 남은 작업
+- **[긴급] `supabase/add_dividend_soft_delete.sql` Supabase 대시보드에서 실행** — 미적용 시 dividend DELETE API 에러 발생
 - Supabase 자동 백업 주기 확인 (프로젝트 설정에서 확인만)
 - AI 프롬프트 품질 개선 (실사용 후 튜닝 요청 시 진행)
 - 연간 재정 리포트 자동 생성 검토 (선택)
@@ -39,6 +49,18 @@
 
 ### ⏸️ 홀딩 결정
 - 월말 자동 백업 (Supabase → 구글시트 Vercel Cron) — 2026-04-28 홀딩
+
+---
+
+## 긴급: dividend soft delete 마이그레이션
+
+Supabase 대시보드 → SQL Editor에서 아래를 실행해야 dividend DELETE가 정상 작동함:
+
+```sql
+ALTER TABLE dividend ADD COLUMN IF NOT EXISTS deleted_at timestamptz DEFAULT NULL;
+```
+
+파일 위치: `supabase/add_dividend_soft_delete.sql`
 
 ---
 
@@ -73,6 +95,7 @@ TELEGRAM_OPS_CHAT_ID=7553686708  # Owner chat_id 유지
 
 ## 다음 세션 시작 체크리스트
 
-1. `docs/PLANS.md` Phase 6 남은 항목 확인
-2. AI 답변 품질 이슈가 있으면 `lib/openai/prompts.ts` 튜닝
-3. 신규 기능 요청 시 WORKFLOW.md 구현 순서 준수
+1. Supabase 대시보드에서 `add_dividend_soft_delete.sql` 적용 여부 확인
+2. `docs/PLANS.md` Phase 6 남은 항목 확인
+3. AI 답변 품질 이슈가 있으면 `lib/openai/prompts.ts` 튜닝
+4. 신규 기능 요청 시 WORKFLOW.md 구현 순서 준수

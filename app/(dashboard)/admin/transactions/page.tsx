@@ -92,7 +92,7 @@ export default function TransactionsPage() {
     const base = transactions
       .filter(t => filterClass === '전체' || t.class === filterClass)
       .map(t => t.type)
-    return ['전체', ...Array.from(new Set(base)).filter(Boolean)]
+    return ['전체', ...Array.from(new Set(base)).filter((v): v is string => v != null && v !== '')]
   }, [transactions, filterClass])
 
   const categoryOptions = useMemo(() => {
@@ -100,7 +100,7 @@ export default function TransactionsPage() {
       .filter(t => filterClass === '전체' || t.class === filterClass)
       .filter(t => filterType === '전체' || t.type === filterType)
       .map(t => t.category)
-    return ['전체', ...Array.from(new Set(base)).filter(Boolean)]
+    return ['전체', ...Array.from(new Set(base)).filter((v): v is string => v != null && v !== '')]
   }, [transactions, filterClass, filterType])
 
   const filtered = useMemo(() => transactions.filter(t => {

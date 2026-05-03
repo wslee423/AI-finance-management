@@ -9,6 +9,7 @@ export async function GET() {
   const { data } = await supabase
     .from('transactions')
     .select('tags')
+    .is('deleted_at', null)
     .not('tags', 'is', null)
     .neq('tags', '')
 

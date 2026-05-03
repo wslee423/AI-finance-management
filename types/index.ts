@@ -7,8 +7,8 @@ export interface Transaction {
   id: string
   date: string
   class: ClassType
-  type: string
-  category: string
+  type: string | null
+  category: string | null
   subcategory: string | null
   item: string | null
   payment: string | null
@@ -43,6 +43,7 @@ export interface Dividend {
   usd_amount: number | null
   krw_amount: number
   created_at: string
+  deleted_at: string | null
 }
 
 export interface PresetTemplate {

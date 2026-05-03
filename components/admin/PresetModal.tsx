@@ -42,9 +42,11 @@ export default function PresetModal({ year, month, onClose, onSuccess }: PresetM
       .map(p => ({
         date: `${year}-${String(month).padStart(2, '0')}-01`,
         class: '지출',
-        category: p.category,
-        subcategory: p.subcategory,
-        item: p.item,
+        // preset_templates.category = DB.type 값 (고정지출 등)
+        type: p.category,
+        category: p.subcategory,
+        subcategory: p.item,
+        item: null,
         user_name: p.user_name,
         amount: Number(amounts[p.id]),
         memo: p.memo,

@@ -134,6 +134,10 @@
 - [x] Sentry 에러 모니터링 설정 (@sentry/nextjs + DSN 연동)
 - [x] 에러 처리 정책 구현 (captureError, notifyTelegramOps, beforeSend 필터)
 - [x] 코드 품질 개선 (any 제거, JSON.parse 안전 처리, auth 에러 핸들링)
+- [x] 파일 일괄입력 필드 정확도 개선 (ImportRow DB 1:1 매핑, item 저장 수정)
+- [x] 시니어 리뷰 — hard delete 위반 수정, PresetModal type 버그, auth 헬퍼 통일, nullable 타입 정리
+- [x] Admin transactions 유형(type) 필터 + 테이블 열 추가
+- [ ] [긴급] Supabase dividend 테이블 soft delete 마이그레이션 실행 (`add_dividend_soft_delete.sql`)
 - [ ] Supabase 자동 백업 주기 확인 (프로젝트 설정)
 - [ ] AI 에이전트 프롬프트 품질 개선 (실사용 후 튜닝)
 - [ ] 연간 재정 리포트 자동 생성 검토

@@ -84,6 +84,26 @@
 - 해결: 수입/지출 합계 계산 시 이체 필터링
 - 교훈: 새 class_type 추가 시 집계 로직에 영향 전체 검토 필요
 
+**파일 업로드 ImportRow 필드명 혼란 (심각)**
+- ImportRow 타입의 필드명(category, subcategory, item)이 DB 필드명(type, category, subcategory)과 1칸씩 어긋남
+- getField 키 충돌: 'category', 'subcategory' 키가 여러 필드 파싱에서 중복 사용
+- DB.item 컬럼이 파일 업로드 시 저장되지 않음
+- 해결: ImportRow 필드를 DB 필드명과 완전히 1:1 일치시키고 getField 키 충돌 제거
+- 교훈: API 내부 타입명은 DB 컬럼명과 일치시킬 것. 중간 변환 타입은 혼란을 야기함
+
+**PresetModal 고정지출 적용 시 type 필드 누락**
+- preset_templates.category 컬럼이 DB.type 값(고정지출 등)을 저장하는데, 트랜잭션 insert 시 category 필드명 그대로 사용
+- → transactions.type = null, transactions.category = '고정지출' (잘못된 컬럼)
+- 해결: `type: p.category, category: p.subcategory, subcategory: p.item`으로 명시적 매핑
+- 교훈: 테이블 간 필드명이 다를 때 중간 매핑을 명시적으로 문서화할 것
+
+**수동 입력 폼에서 type 필드 누락 (파일 업로드와 불일치)**
+- 폼에서 '카테고리' 선택값(변동지출 등)이 payload.category → DB.category에 저장됨
+- DB.type은 null (폼에 type 입력 없음)
+- 결과: 수동 입력 데이터 vs 파일 업로드 데이터의 필드 불일치
+- 해결: 폼 state의 category → type으로 rename, 명시적 payload 매핑
+- 교훈: `...form` 스프레드를 payload로 사용하면 필드 매핑 버그가 숨겨짐. 항상 명시적으로 매핑할 것
+
 ---
 
 ## 재사용 가능한 패턴
@@ -99,6 +119,7 @@ export async function getAuthUser() {
 export const unauthorized = () => NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 export const serverError = (msg: string) => NextResponse.json({ error: msg }, { status: 500 })
 ```
+→ 모든 Route Handler에서 이 헬퍼 사용. 직접 `supabase.auth.getUser()` 호출 금지.
 
 ### 동적 폼 초기값
 ```typescript
@@ -107,6 +128,31 @@ const EMPTY_FORM = { date: getTodayStr() }
 
 // ✅ 올바른 방법 — 매 호출마다 오늘 날짜
 const makeEmptyForm = () => ({ date: getTodayStr() })
+```
+
+### 명시적 payload 매핑
+```typescript
+// ❌ 잘못된 방법 — 폼 state 구조와 DB 컬럼명이 다를 때 버그 숨김
+const payload = { ...form, amount: Number(form.amount) }
+
+// ✅ 올바른 방법 — DB 필드를 명시적으로 매핑
+const payload = {
+  date: form.date,
+  class: form.class,
+  type: form.type,
+  category: form.category || null,
+  amount: Number(form.amount),
+  ...
+}
+```
+
+### TypeScript filter로 null 제거
+```typescript
+// ❌ filter(Boolean)은 TypeScript가 null 제거를 추론 못할 수 있음
+const options = items.map(t => t.type).filter(Boolean)  // (string | null)[]
+
+// ✅ 타입 가드 사용
+const options = items.map(t => t.type).filter((v): v is string => v != null && v !== '')  // string[]
 ```
 
 ### 연도 옵션 동적 생성
@@ -119,7 +165,6 @@ export function getYearOptions(startYear = 2022): number[] {
 
 ### 마이그레이션 후 건수 검증
 ```typescript
-// 마이그레이션 완료 후 반드시 실행
 const { count } = await supabase.from('table').select('*', { count: 'exact', head: true })
 console.assert(count === expectedCount, `건수 불일치: ${count} !== ${expectedCount}`)
 ```
@@ -289,3 +334,20 @@ export async function POST(request: Request) {
 - `select(columns)` where `columns`가 런타임 변수이면 Supabase가 타입 추론 불가 → `ParserError` 반환
 - 해결: `as unknown as TargetType[]` 중간 단계 캐스트 (이유 주석 필수)
 - 교훈: Supabase TypeScript 타입은 select 문자열이 컴파일 타임 리터럴일 때만 정확히 추론됨
+
+---
+
+## 코드 리뷰 — 발견된 구조적 이슈 (2026-05)
+
+### soft delete 일관성
+- transactions: ✅ soft delete (`deleted_at`)
+- assets: ✅ soft delete 없음 (스냅샷 방식이라 삭제 자체가 없음)
+- dividend: ⚠️ hard delete → soft delete로 전환 (마이그레이션 필요: `supabase/add_dividend_soft_delete.sql`)
+
+### 인증 헬퍼 일관성
+- `lib/api.ts`의 `getAuthUser()` 헬퍼를 모든 Route Handler에서 사용할 것
+- 직접 `supabase.auth.getUser()` 호출은 패턴 불일치 → 버그 발견 어려움
+
+### 태그 조회 시 soft-delete 필터 누락
+- `tags/route.ts`: 삭제된 트랜잭션의 태그가 자동완성에 노출됨
+- 해결: `.is('deleted_at', null)` 추가

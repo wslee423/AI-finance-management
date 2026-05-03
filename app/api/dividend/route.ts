@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const year = searchParams.get('year')
 
-  let query = supabase.from('dividend').select('*').order('date', { ascending: false })
+  let query = supabase.from('dividend').select('*').is('deleted_at', null).order('date', { ascending: false })
   if (year) query = query.gte('date', `${year}-01-01`).lte('date', `${year}-12-31`)
 
   const { data, error } = await query
